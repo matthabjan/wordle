@@ -1,7 +1,7 @@
 {
-  "name": "woertchen",
-  "homepage": "https://woertchen.sofacoach.de",
-  "version": "0.1.0",
+  "name": "wordle",
+  "homepage": "https://wordle.mn11.net",
+  "version": "0.1",
   "private": true,
   "dependencies": {
     "@headlessui/react": "^1.4.2",
