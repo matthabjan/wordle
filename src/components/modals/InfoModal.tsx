@@ -48,17 +48,7 @@ export const InfoModal = ({ isOpen, handleClose }: Props) => {
       <p className="mt-4">
         Jeden Tag um Mitternacht wird ein neues Wordle freigeschaltet.
       </p>
-
-      <p className="mt-6 italic text-sm text-gray-500 dark:text-gray-300">
-        Wordle ist ein Klon von{' '}
-        <a
-          href="https://github.com/diondiondion/woertchen/"
-          className="underline font-bold"
-        >
-          Wörtchen
-        </a>
-        .
-      </p>
+      
     </BaseModal>
   )
 }
