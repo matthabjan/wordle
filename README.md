@@ -1,6 +1,6 @@
 # React Wordle
 
-This is a clone project of diondiondion/wörtchen.
+This is a clone project of https://github.com/diondiondion/wörtchen.
 
 ## Build and run
 
