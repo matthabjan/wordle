@@ -29,7 +29,7 @@ Open [http://localhost:3000](http://localhost:3000) in browser.
 
 ```bash
 $> docker build --target=prod -t game:prod .
-$> docker run -d -p 8080:8080 game:prod
+$> docker run -d -p 80:80 game:prod
 ```
 
 Open [http://localhost](http://localhost) in browser.
