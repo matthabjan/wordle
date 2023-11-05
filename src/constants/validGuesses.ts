@@ -4437,8 +4437,6 @@ export const VALID_GUESSES = [
   'zogst',
   'zolle',
   'zollt',
-  'zoome',
-  'zoomt',
   'zotig',
   'zucke',
   'zuckt',
