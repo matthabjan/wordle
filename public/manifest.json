@@ -1,6 +1,6 @@
 {
-  "short_name": "Wörtchen",
-  "name": "Wörtchen",
+  "short_name": "wordle",
+  "name": "wordle",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
