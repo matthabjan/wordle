@@ -14,7 +14,7 @@ export const shareStatus = (
       lost ? 'X' : guesses.length
     }/${MAX_CHALLENGES}${isHardMode ? '*' : ''}\n\n${generateEmojiGrid(
       guesses
-    )}\n\nhttps://woertchen.sofacoach.de`
+    )}\n\nhttps://wordle.mn11.net`
   )
 }
 
