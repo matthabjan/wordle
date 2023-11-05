@@ -3,15 +3,14 @@ export const GAME_TITLE = process.env.REACT_APP_GAME_NAME!
 export const WIN_MESSAGES = [
   'Gut gemacht!',
   'Super!',
-  'Geiles Gehirn, Günter!',
   'Mega',
   'Stark',
-  'Voll gut ey',
-  'Du scheinst kluk zu sein',
+  'Voll gut',
+  'Du scheinst klug zu sein',
   'Weiter so',
   'Toll!',
   'Darauf eine Scheibe Vollkornbrot!',
-  'So muss die Baklava schmecken',
+  'Gar nicht schlecht',
   'Stabile Leistung',
 ]
 export const GAME_COPIED_MESSAGE = 'Spielverlauf kopiert'
