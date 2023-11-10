@@ -10,8 +10,9 @@ export const WIN_MESSAGES = [
   'Weiter so',
   'Toll!',
   'Darauf eine Scheibe Vollkornbrot!',
-  'Gar nicht schlecht',
+  'Gar nicht schlecht, Herr Specht',
   'Stabile Leistung',
+  'Prima, ein Experte!',
 ]
 export const GAME_COPIED_MESSAGE = 'Spielverlauf kopiert'
 export const ABOUT_GAME_MESSAGE = 'Über Wordle'
