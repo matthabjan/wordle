@@ -1,7 +1,7 @@
 /**
  * SPOILER ALERT
  *
- * This file contains the solutions to each game of Wörtchen
+ * This file contains the solutions to each game of Wordle
  */
 
 export const WORDS = [
