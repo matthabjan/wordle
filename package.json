@@ -1,6 +1,6 @@
 {
   "name": "wordle",
-  "version": "wordle 0.3",
+  "version": "0.3",
   "private": true,
   "scripts": {
     "build": "react-scripts build",
