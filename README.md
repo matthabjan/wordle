@@ -1,4 +1,4 @@
-# React Wordle
+# Wordle
 
 This is a clone project of https://github.com/diondiondion/woertchen.
 
@@ -29,7 +29,7 @@ Open [http://localhost:3000](http://localhost:3000) in browser.
 
 ```bash
 $> docker build --target=prod -t wordle:prod .
-$> docker run -d -p 80:80 wordle:prod
+$> docker run -d -p 80:8080 wordle:prod
 ```
 
 Open [http://localhost](http://localhost) in browser.
