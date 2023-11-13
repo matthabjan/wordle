@@ -2,7 +2,8 @@ import React from 'react'
 import { render, screen } from '@testing-library/react'
 import App from './App'
 import { GAME_TITLE } from './constants/strings'
-  
+import { vi } from 'jest'
+ 
 // Mock the ResizeObserver
 const ResizeObserverMock = vi.fn(() => ({
   observe: vi.fn(),
