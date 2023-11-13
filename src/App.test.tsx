@@ -2,17 +2,6 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import App from './App';
 import { GAME_TITLE } from './constants/strings';
-import { jest } from '@jest/globals';
-
-// Mock the ResizeObserver
-const ResizeObserverMock = jest.fn(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
-}));
-
-// Stub the global ResizeObserver
-global.ResizeObserver = ResizeObserverMock;
 
 beforeEach(() => {
   Object.defineProperty(window, 'matchMedia', {
