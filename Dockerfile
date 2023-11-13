@@ -7,11 +7,18 @@ COPY . .
 FROM node_modules AS prod_builder
 RUN npm run build
 
-FROM nginx:1.20.2-alpine AS prod
+## Production image
+FROM nginx:1.25.2-alpine AS prod
+COPY etc/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=prod_builder /app/build /usr/share/nginx/html
-# Default HTTP port of Nginx.
+COPY /build_system.sh .
+RUN ./build_system.sh && rm ./build_system.sh
+# port use by Nginx within docker network.
 EXPOSE 80
+USER wordle
 
+## Development image
 FROM node_modules AS dev
 EXPOSE 3000
 CMD npm run start
