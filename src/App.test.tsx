@@ -2,18 +2,17 @@ import React from 'react'
 import { render, screen } from '@testing-library/react'
 import App from './App'
 import { GAME_TITLE } from './constants/strings'
-import { vi } from 'jest'
+import { jest } from '@jest/globals'
  
 // Mock the ResizeObserver
-const ResizeObserverMock = vi.fn(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+const ResizeObserverMock = jest.fn(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}))
 
 // Stub the global ResizeObserver
-vi.stubGlobal('ResizeObserver', ResizeObserverMock);
-
+global.ResizeObserver = ResizeObserverMock
 
 beforeEach(() => {
   Object.defineProperty(window, 'matchMedia', {
