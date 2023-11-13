@@ -3,13 +3,6 @@ import { render, screen } from '@testing-library/react';
 import App from './App';
 import { GAME_TITLE } from './constants/strings';
 
-// Mock the ResizeObserver
-global.ResizeObserver = jest.fn(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
-}));
-
 beforeEach(() => {
   // Mock matchMedia
   Object.defineProperty(window, 'matchMedia', {
