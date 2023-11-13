@@ -15,7 +15,7 @@ COPY --from=prod_builder /app/build /usr/share/nginx/html
 COPY docker/build_system.sh .
 RUN ./build_system.sh && rm ./build_system.sh
 # port use by Nginx within docker network.
-EXPOSE 80
+EXPOSE 8080
 USER wordle
 
 ## Development image
