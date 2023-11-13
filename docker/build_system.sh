@@ -4,8 +4,8 @@
 set -e pipefall;
 set -u pipefall;
 
-UID=1001
-GID=1001
+UID=1010
+GID=1010
 USER=wordle
 GROUP=wordle
 
