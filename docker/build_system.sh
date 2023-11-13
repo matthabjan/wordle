@@ -6,8 +6,8 @@ set -u pipefall;
 
 UID=1001
 GID=1001
-USER=reactle
-GROUP=reactle
+USER=wordle
+GROUP=wordle
 
 # Enable print for all executed commands
 trace_on() { set -x;}
