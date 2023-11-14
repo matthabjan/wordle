@@ -58,17 +58,6 @@ Open [http://localhost](http://localhost) in browser.
 - If the language's letters are made of multiple unicode characters, use a grapheme splitter at various points throughout the app or normalize the input so that all of the letters are made of a single character
 - If the language is written right-to-left, prepend `\u202E` (the unicode right-to-left override character) to the return statement of the inner function in `generateEmojiGrid` in [src/lib/share.ts](src/lib/share.ts)
 
-### How can I add usage tracking?
-
-This repository includes support for Google Analytics or [Plausible Analytics](https://plausible.io), but, by default, this is disabled.
-
-To enable Google Analytics:
-
-- Create a Google Analytics 4 property and obtain the measurement ID (of the format `G-XXXXXXXXXX`)
-- In [.env](.env), add `REACT_APP_GOOGLE_MEASUREMENT_ID=G-XXXXXXXXXX`
-
-Keep in mind that your region might have legislation about obtaining a user's consent before enabling trackers. This is up to downstream repos to implement.
-
 To enable Plausible Analytics:
 
 - Create a new website with Plausible Analytics with a given domain, e.g. `example.app`
