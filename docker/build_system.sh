@@ -4,10 +4,10 @@
 set -e pipefall;
 set -u pipefall;
 
-UID=1010
-GID=1010
-USER=wordle
-GROUP=wordle
+UID=1000
+GID=100
+USER=pi
+GROUP=users
 
 # Enable print for all executed commands
 trace_on() { set -x;}
