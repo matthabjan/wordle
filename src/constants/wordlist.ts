@@ -673,8 +673,6 @@ export const WORDS = [
 	'stieg',
 	'lecke',
 	'zange',
-	'meier',
-	'eures',
 	'sudan',
 	'honig',
 	'porto',
