@@ -23,8 +23,12 @@ beforeEach(() => {
   });
 });
 
+
 test('renders App component', () => {
-  render(<App />);
+  act(() => {
+    render(<App />);
+  });
+
   const linkElement = screen.getByText(GAME_TITLE);
   expect(linkElement).toBeInTheDocument();
 });
