@@ -9,7 +9,7 @@ This is a clone project of https://github.com/diondiondion/woertchen.
 Clone the repository and perform the following command line actions:
 
 ```bash
-$> cd react-wordle
+$> cd wordle
 $> npm install
 $> npm run start
 ```
