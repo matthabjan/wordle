@@ -32,7 +32,7 @@ export const shareStatusWithBBCode = (
       guesses
         .map(
           (guess) =>
-            `${generateEmojiGridLine(guess)} [spoiler]${guess}[/spoiler]`
+            `${generateEmojiGridLine(guess)} ${guess}`
         )
         .join('\n')
   )
