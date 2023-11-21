@@ -24,7 +24,7 @@ export const shareStatusWithBBCode = (
   isHardMode: boolean
 ) => {
   navigator.clipboard.writeText(
-    `[${GAME_TITLE}](https://wordle.mn11.net) ` +
+    `${GAME_TITLE}` +
       solutionIndex +
       ' ' +
       (lost ? 'X' : guesses.length) +
