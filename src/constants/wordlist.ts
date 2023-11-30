@@ -688,7 +688,6 @@ export const WORDS = [
 	'ziele',
 	'frist',
 	'milde',
-	'boese',
 	'darin',
 	'grell',
 	'sitte',
