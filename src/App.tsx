@@ -1,6 +1,6 @@
 import {
   InformationCircleIcon,
-  PresentationChartBarIcon,
+  ChartBarIcon,
   CogIcon,
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
