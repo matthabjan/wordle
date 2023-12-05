@@ -73,9 +73,8 @@
     "src/**/*.{ts,tsx,js,jsx,css,md}": "prettier --write"
   },
   "jest": {
-  "moduleNameMapper": {
-    "@/(.*)": "<rootDir>/src/$1",
-    "^@heroicons/react/(.*)$": "<rootDir>/node_modules/@heroicons/react/$1"
-  }
+    "moduleNameMapper": {
+      "@/(.*)": "<rootDir>/src/$1"
+    }
 }
 }
