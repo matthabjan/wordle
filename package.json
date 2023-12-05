@@ -28,7 +28,7 @@
     "egoroof-blowfish": "^4.0.1",
     "grapheme-splitter": "1.0.4",
     "query-string": "^8.1.0",
-    "react": "^17.0.2",
+    "react": "^18.0.0",
     "react-countdown": "^2.3.2",
     "react-datepicker": "^4.8.0",
     "react-div-100vh": "^0.7.0",
