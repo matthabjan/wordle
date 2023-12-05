@@ -75,7 +75,7 @@
   "jest": {
   "moduleNameMapper": {
     "@/(.*)": "<rootDir>/src/$1",
-    "^@heroicons/react/outline/(.*)$": "<rootDir>/node_modules/@heroicons/react/outline/$1"
+    "^@heroicons/react/(.*)$": "<rootDir>/node_modules/@heroicons/react/$1"
   }
 }
 }
