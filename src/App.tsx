@@ -2,7 +2,7 @@ import {
   InformationCircleIcon,
   ChartBarIcon,
   CogIcon,
-} from '@heroicons/react/outline/24'
+} from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { Grid } from './components/grid/Grid'
 import { Keyboard } from './components/keyboard/Keyboard'
