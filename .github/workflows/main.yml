@@ -1,4 +1,4 @@
-name: Node.js CI
+name: Upgrade NPM packages
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main  # Adjust the branch name if needed
 
 jobs:
-  build:
+  upgrade packages:
 
     runs-on: ubuntu-latest
 
@@ -19,8 +19,12 @@ jobs:
       with:
         node-version: 18  # Adjust the Node.js version if needed
 
-    - name: Install Dependencies
-      run: npm install
+    - name: Run NPM update
+      run: npm update
 
-    - name: Update package-lock.json
-      run: npm ci
+    - name: Commit and create PR
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: 'build(deps): Upgrade NPM packages (automated)'
+          branch: 'build-deps-upgrade-npm-packages-automated'
+          commit-message: 'build(deps): upgrade NPM packages (automated)'
