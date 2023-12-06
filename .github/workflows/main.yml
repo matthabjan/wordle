@@ -1,9 +1,10 @@
 name: Upgrade NPM packages
 
 on:
-  push:
-    branches:
-      - main  # Adjust the branch name if needed
+  workflow_dispatch:
+
+  schedule:
+    - cron:  "0 0 * * 0"
 
 jobs:
   upgrade-packages:
