@@ -6,7 +6,7 @@ on:
       - main  # Adjust the branch name if needed
 
 jobs:
-  upgrade packages:
+  upgrade-packages:
 
     runs-on: ubuntu-latest
 
