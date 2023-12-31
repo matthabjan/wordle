@@ -24,7 +24,8 @@ export const shareStatusWithBBCode = (
   isHardMode: boolean
 ) => {
   navigator.clipboard.writeText(
-    `${GAME_TITLE} ` +
+    `${GAME_TITLE}` +
+      ' ' +
       solutionIndex +
       ' ' +
       (lost ? 'X' : guesses.length) +
