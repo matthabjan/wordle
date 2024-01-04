@@ -59,7 +59,7 @@
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-    "@types/react-datepicker": "^4.19.4",
+    "@types/react-datepicker": "^4.19.5",
     "autoprefixer": "^10.4.16",
     "husky": "^8.0.3",
     "lint-staged": "^15.2.0",
