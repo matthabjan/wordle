@@ -57,7 +57,7 @@
     ]
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+"@babel/plugin-transform-private-property-in-object": "^7.23.4",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/react-datepicker": "^4.19.5",
     "autoprefixer": "^10.4.16",
