@@ -49,7 +49,7 @@ function App() {
   ).matches
 
   const { showError: showErrorAlert, showSuccess: showSuccessAlert } =
-    useAlert()
+useAlert()
   const [currentGuess, setCurrentGuess] = useState('')
   const [isGameWon, setIsGameWon] = useState(false)
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
