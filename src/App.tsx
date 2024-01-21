@@ -251,7 +251,7 @@ useAlert()
           className="h-6 w-6 mr-3 cursor-pointer dark:stroke-white"
           onClick={() => setIsStatsModalOpen(true)}
         />
-        <Cog-6-ToothIcon
+        <Cog6ToothIcon
           className="h-6 w-6 mr-3 cursor-pointer dark:stroke-white"
           onClick={() => setIsSettingsModalOpen(true)}
         />
