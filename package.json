@@ -61,7 +61,7 @@
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/react-datepicker": "^4.19.5",
     "autoprefixer": "^10.4.16",
-    "husky": "^8.0.3",
+    "husky": "^9.0.7",
     "lint-staged": "^15.2.0",
     "postcss": "^8.4.32",
     "prettier": "^3.2.2",
