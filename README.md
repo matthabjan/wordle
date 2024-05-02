@@ -1,4 +1,4 @@
-# Wordle
+# Wordle 1.7
 
 This is a clone project of https://github.com/diondiondion/woertchen.
 
