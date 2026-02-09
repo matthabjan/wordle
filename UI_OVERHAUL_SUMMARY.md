@@ -1,7 +1,9 @@
-# Wordle UI/UX Overhaul Summary
+# Wordle 2.0 UI/UX Overhaul Summary
 
 ## Overview
 Complete modern minimalist and tactile design transformation with Framer Motion animations.
+
+**Version:** 2.0 (upgraded from 1.7)
 
 ## 🎨 Visual Refinement
 
