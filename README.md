@@ -1,59 +1,234 @@
-# Wordle 1.7
+# Wordle 1.7 - German Edition
 
-This is a clone project of https://github.com/diondiondion/woertchen.
+A modern German implementation of the popular Wordle game. This project is originally forked from [woertchen](https://github.com/diondiondion/woertchen) and features a curated German word list with enhanced accessibility and universal keyboard support.
 
-## Build and run
+## Features
 
-### To Run Locally:
+- **882 Curated German Words** - High-quality word list from [darwinbecker/wordle](https://github.com/darwinbecker/wordle)
+- **Universal Keyboard Support** - Standard A-Z layout works on any keyboard (no special characters required)
+- **Modern React UI** - Built with React 18, TypeScript, and Tailwind CSS
+- **Progressive Web App** - Install and play offline
+- **Dark Mode Support** - Comfortable gameplay in any lighting
+- **Statistics Tracking** - Track your progress and winning streaks
+- **Share Results** - Share your daily results with friends
+- **Responsive Design** - Optimized for desktop and mobile devices
 
-Clone the repository and perform the following command line actions:
+## Quick Start
 
-```bash
-$> cd wordle
-$> npm install
-$> npm run start
-```
+### Run Locally
 
-### To build/run docker container:
-
-#### Development
-
-```bash
-$> docker build -t wordle:dev .
-$> docker run -d -p 3000:3000 wordle:dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in browser.
-
-#### Production
+Clone the repository and start the development server:
 
 ```bash
-$> docker build --target=prod -t wordle:prod .
-$> docker run -d -p 80:8080 wordle:prod
+git clone <repository-url>
+cd wordle
+npm install
+npm start
 ```
 
-Open [http://localhost](http://localhost) in browser.
+The app will open at [http://localhost:3000](http://localhost:3000)
 
-### How can I change the length of a guess?
+### Build for Production
 
-- Update the `MAX_WORD_LENGTH` variable in [src/constants/settings.ts](src/constants/settings.ts) to the desired length.
-- Update the `WORDS` array in [src/constants/wordlist.ts](src/constants/wordlist.ts) to only include words of the new length.
-- Update the `VALID_GUESSES` array in [src/constants/validGuesses.ts](src/constants/validGuesses.ts) arrays to only include words of the new length.
+Create an optimized production build:
 
-### How can I create a version in another language?
+```bash
+npm run build
+```
 
-- In [.env](.env):
-  - Update the title and the description
-- In [public/index.html](public/index.html):
-  - Update the "You need to enable JavaScript" message
-  - Update the language attribute in the HTML tag
-  - If the language is written right-to-left, add `dir="rtl"` to the HTML tag
-- Update the name and short name in [public/manifest.json](public/manifest.json)
-- Update the strings in [src/constants/strings.ts](src/constants/strings.ts)
-- Add all of the five letter words in the language to [src/constants/validGuesses.ts](src/constants/validGuesses.ts), replacing the English words
-- Add a list of goal words in the language to [src/constants/wordlist.ts](src/constants/wordlist.ts), replacing the English words
-- Update the "Settings" modal in [src/components/modals/SettingsModal.tsx](src/components/modals/SettingsModal.tsx)
-- Update the "Info" modal in [src/components/modals/InfoModal.tsx](src/components/modals/InfoModal.tsx)
-- If the language has letters that are not present in English update the keyboard in [src/components/keyboard/Keyboard.tsx](src/components/keyboard/Keyboard.tsx)
-- If the language's letters are made of multiple unicode characters, use a grapheme splitter at various points throughout the app or normalize the input so that all of the letters are made of a single character
-- If the language is written right-to-left, prepend `\u202E` (the unicode right-to-left override character) to the return statement of the inner function in `generateEmojiGrid` in [src/lib/share.ts](src/lib/share.ts)
+The build output will be in the `build/` directory.
+
+### Docker Support
+
+#### Docker Compose (Recommended for Production)
+
+The easiest way to deploy in production:
+
+```bash
+# Quick start
+docker-compose -f docker-compose.prod.yml up -d
+
+# With custom configuration
+cp .env.docker.example .env.docker
+# Edit .env.docker with your settings
+docker-compose --env-file .env.docker -f docker-compose.prod.yml up -d
+
+# Or use the Makefile for easier management
+make up-prod
+```
+
+Open [http://localhost:8080](http://localhost:8080) in your browser.
+
+For detailed Docker Compose documentation including SSL/TLS setup, monitoring, and troubleshooting, see [DOCKER.md](DOCKER.md).
+
+##### Using the Makefile
+
+For simplified Docker management, use the included Makefile:
+
+```bash
+make help         # Show all available commands
+make build-prod   # Build production image
+make up-prod      # Start production container
+make logs-prod    # View logs
+make health       # Check container health
+make down-prod    # Stop container
+```
+
+#### Standalone Docker Containers
+
+##### Development Container
+
+```bash
+docker build -t wordle:dev .
+docker run -d -p 3000:3000 wordle:dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+##### Production Container
+
+```bash
+docker build --target=prod -t wordle:prod .
+docker run -d -p 80:8080 wordle:prod
+```
+
+Open [http://localhost](http://localhost) in your browser.
+
+## Word Lists
+
+This project uses carefully curated German word lists:
+
+- **Solution Words**: 882 five-letter German words (provides ~2.4 years of daily puzzles)
+- **Valid Guesses**: 2,411 accepted words for gameplay
+- **Character Set**: A-Z only (no umlauts for universal compatibility)
+- **Quality**: Zero duplicates, zero invalid entries, 100% coverage
+
+### Word List Source
+
+The word lists are imported from the actively maintained [darwinbecker/wordle](https://github.com/darwinbecker/wordle) repository, ensuring high-quality, recognizable German vocabulary.
+
+## Technology Stack
+
+- **Frontend**: React 18 with TypeScript
+- **Styling**: Tailwind CSS with custom components
+- **UI Components**: Headless UI for accessible modals
+- **Icons**: Heroicons
+- **Build Tool**: Create React App with React Scripts 5
+- **Testing**: Jest and React Testing Library
+- **Code Quality**: Prettier, ESLint, Husky pre-commit hooks
+- **Date Handling**: date-fns
+- **Utilities**: grapheme-splitter for proper Unicode handling
+
+## Project Structure
+
+```
+wordle/
+├── public/           # Static assets and PWA configuration
+├── src/
+│   ├── components/   # React components
+│   │   ├── alerts/   # Alert notifications
+│   │   ├── grid/     # Game grid and cells
+│   │   ├── keyboard/ # Virtual keyboard
+│   │   ├── modals/   # Info, Settings, Stats modals
+│   │   └── stats/    # Statistics and progress tracking
+│   ├── constants/    # Game settings and word lists
+│   ├── context/      # React context providers
+│   └── lib/          # Utility functions
+├── docker/           # Docker configuration
+└── .github/          # GitHub Actions workflows
+```
+
+## Customization
+
+### Change Word Length
+
+To modify the game to use words of a different length:
+
+1. Update `MAX_WORD_LENGTH` in [src/constants/settings.ts](src/constants/settings.ts)
+2. Replace the words in [src/constants/wordlist.ts](src/constants/wordlist.ts) with words of the new length
+3. Update [src/constants/validGuesses.ts](src/constants/validGuesses.ts) with valid guesses of the new length
+
+### Adapt for Another Language
+
+To create a version in a different language:
+
+1. **Environment Configuration** ([.env](.env))
+   - Update `REACT_APP_GAME_NAME` and `REACT_APP_GAME_DESCRIPTION`
+
+2. **HTML Configuration** ([public/index.html](public/index.html))
+   - Update the language attribute in the HTML tag
+   - Update the "JavaScript required" message
+   - For RTL languages, add `dir="rtl"` to the HTML tag
+
+3. **PWA Manifest** ([public/manifest.json](public/manifest.json))
+   - Update the app name and short name
+
+4. **Translations** ([src/constants/strings.ts](src/constants/strings.ts))
+   - Translate all UI strings
+
+5. **Word Lists**
+   - Replace words in [src/constants/wordlist.ts](src/constants/wordlist.ts) with target language solution words
+   - Replace words in [src/constants/validGuesses.ts](src/constants/validGuesses.ts) with valid guesses
+
+6. **UI Components**
+   - Update [src/components/modals/SettingsModal.tsx](src/components/modals/SettingsModal.tsx)
+   - Update [src/components/modals/InfoModal.tsx](src/components/modals/InfoModal.tsx)
+
+7. **Keyboard** ([src/components/keyboard/Keyboard.tsx](src/components/keyboard/Keyboard.tsx))
+   - Adapt the keyboard layout for the target language alphabet
+   - For multi-byte characters, use grapheme-splitter throughout the app
+
+8. **RTL Support**
+   - For RTL languages, prepend `\u202E` (Unicode RTL override) in the `generateEmojiGrid` function in [src/lib/share.ts](src/lib/share.ts)
+
+## Development Scripts
+
+```bash
+npm start          # Start development server
+npm run build      # Build for production
+npm test           # Run tests
+npm run lint       # Check code formatting
+npm run fix        # Auto-fix formatting issues
+```
+
+## Game Settings
+
+- **Word Length**: 5 letters
+- **Max Attempts**: 6 guesses
+- **Character Set**: A-Z (26 letters)
+- **Daily Puzzle**: New word every day
+- **Hard Mode**: Optional challenge mode
+
+## Browser Support
+
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+- Mobile browsers (iOS Safari, Chrome Mobile)
+
+## Contributing
+
+Contributions are welcome! Please ensure:
+
+1. Code passes all linting checks (`npm run lint`)
+2. All tests pass (`npm test`)
+3. Husky pre-commit hooks pass
+4. Changes are well-documented
+
+## License
+
+See [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Original project: [woertchen](https://github.com/diondiondion/woertchen) by diondiondion
+- German word list: [darwinbecker/wordle](https://github.com/darwinbecker/wordle)
+- Original Wordle game by Josh Wardle
+
+## Documentation
+
+For detailed information about recent updates:
+- [COMPLETE_UPDATE_SUMMARY.md](COMPLETE_UPDATE_SUMMARY.md) - Comprehensive update documentation
+- [WORD_ANALYSIS_REPORT.md](WORD_ANALYSIS_REPORT.md) - Word list analysis
+- [UI_UPDATE_REPORT.md](UI_UPDATE_REPORT.md) - Keyboard and UI changes

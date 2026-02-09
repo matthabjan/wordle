@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  wordle:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: prod
+    image: wordle:prod
+    container_name: wordle-app
+    restart: unless-stopped
+    ports:
+      - "${WORDLE_PORT:-8080}:8080"
+    environment:
+      # Environment variables are baked into the build
+      # To change these, rebuild the image with updated .env file
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # Resource limits (adjust based on your needs)
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    networks:
+      - wordle-network
+
+  # Optional: Nginx reverse proxy for SSL termination and advanced features
+  # Uncomment this section if you need SSL/TLS support
+  # nginx-proxy:
+  #   image: nginx:1.27-alpine
+  #   container_name: wordle-nginx-proxy
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./docker/proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./docker/proxy/conf.d:/etc/nginx/conf.d:ro
+  #     - ./certs:/etc/nginx/certs:ro
+  #     - nginx-logs:/var/log/nginx
+  #   depends_on:
+  #     - wordle
+  #   networks:
+  #     - wordle-network
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
+
+networks:
+  wordle-network:
+    driver: bridge
+
+# Uncomment if using nginx-proxy
+# volumes:
+#   nginx-logs:
