@@ -52,8 +52,8 @@ export const findFirstUnusedReveal = (word: string, guesses: string[]) => {
 }
 
 export const getWordOfDay = () => {
-  // December 13, 2023 Game Epoch
-  const epoch = new Date('December 13, 2023 00:00:00')
+  // February 9, 2026 Game Epoch
+  const epoch = new Date('February 9, 2026 00:00:00')
   const start = new Date(epoch)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
