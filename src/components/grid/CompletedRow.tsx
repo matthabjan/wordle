@@ -10,38 +10,20 @@ type Props = {
 export const CompletedRow = ({ guess, isRevealing }: Props) => {
   const statuses = getGuessStatuses(guess)
 
-  // Staggered animation container for the row
-  const rowVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      }
-    }
-  }
-
-  const cellContainerVariants = {
-    hidden: { opacity: 0, y: -10 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: {
-        duration: 0.2,
-        ease: 'easeOut'
-      }
-    }
-  }
-
   return (
-    <motion.div 
+    <motion.div
       className="flex justify-center mb-1"
-      variants={rowVariants}
-      initial="hidden"
-      animate="visible"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
     >
       {guess.split('').map((letter, i) => (
-        <motion.div key={i} variants={cellContainerVariants}>
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, delay: i * 0.05 }}
+        >
           <Cell
             value={letter}
             status={statuses[i]}

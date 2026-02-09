@@ -24,37 +24,24 @@ export const Grid = ({
       ? Array.from(Array(MAX_CHALLENGES - 1 - guesses.length))
       : []
 
-  // Cascade animation for winning
-  const gridVariants = {
-    normal: {},
-    winning: {
-      transition: {
-        staggerChildren: 0.1,
-      }
-    }
-  }
-
-  const rowWinVariants = {
-    normal: { scale: 1, y: 0 },
-    winning: { 
-      scale: [1, 1.05, 1],
-      y: [0, -4, 0],
-      transition: {
-        duration: 0.6,
-        ease: 'easeOut'
-      }
-    }
-  }
-
   return (
-    <motion.div 
-      className="pb-6"
-      variants={gridVariants}
-      initial="normal"
-      animate={isGameWon ? "winning" : "normal"}
-    >
+    <motion.div className="pb-6">
       {guesses.map((guess, i) => (
-        <motion.div key={i} variants={rowWinVariants}>
+        <motion.div
+          key={i}
+          animate={
+            isGameWon
+              ? {
+                  scale: [1, 1.05, 1],
+                  y: [0, -4, 0],
+                }
+              : { scale: 1, y: 0 }
+          }
+          transition={{
+            duration: 0.6,
+            delay: isGameWon ? i * 0.1 : 0,
+          }}
+        >
           <CompletedRow
             guess={guess}
             isRevealing={isRevealing && guesses.length - 1 === i}

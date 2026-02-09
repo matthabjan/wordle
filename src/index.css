@@ -13,7 +13,7 @@
 :root {
   --animation-speed: 1000ms;
   --animation-speed-fast: 250ms;
-  
+
   /* Nature Distilled Color Variables */
   --default-cell-bg-color: #fafaf9;
   --default-cell-border-color: #d6d3d1;
@@ -21,7 +21,7 @@
   --absent-cell-bg-color: #78716c;
   --correct-cell-bg-color: #10b981;
   --present-cell-bg-color: #f59e0b;
-  
+
   /* Soft UI Variables */
   --cell-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
   --cell-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -73,7 +73,7 @@
 }
 
 .jiggle {
-  animation: shake 0.3s cubic-bezier(.36,.07,.19,.97);
+  animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 }
 
 .heartbeat {
@@ -170,19 +170,28 @@
 }
 
 @keyframes shake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
-  10%, 30%, 50%, 70%, 90% {
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
     transform: translateX(-8px);
   }
-  20%, 40%, 60%, 80% {
+  20%,
+  40%,
+  60%,
+  80% {
     transform: translateX(8px);
   }
 }
 
 @keyframes heartbeat {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {

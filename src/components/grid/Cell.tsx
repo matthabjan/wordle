@@ -45,23 +45,12 @@ export const Cell = ({
     },
   )
 
-  // Framer Motion variants for tactile feedback
-  const cellVariants = {
-    initial: { scale: 1 },
-    filled: { 
-      scale: [1, 1.1, 1],
-      transition: { duration: 0.15, ease: 'easeOut' }
-    },
-    empty: { scale: 1 }
-  }
-
   return (
-    <motion.div 
-      className={classes} 
+    <motion.div
+      className={classes}
       style={{ animationDelay }}
-      variants={cellVariants}
-      initial="initial"
-      animate={isFilled ? "filled" : "empty"}
+      animate={isFilled ? { scale: [1, 1.1, 1] } : { scale: 1 }}
+      transition={{ duration: 0.15 }}
     >
       <div className="letter-container font-display" style={{ animationDelay }}>
         {value}

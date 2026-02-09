@@ -30,7 +30,8 @@ export const Key = ({
     {
       'bg-nature-stone-200 dark:bg-nature-stone-600 hover:bg-nature-stone-300 dark:hover:bg-nature-stone-500 active:scale-95':
         !status,
-      'bg-nature-stone-500 dark:bg-nature-stone-800 text-white': status === 'absent',
+      'bg-nature-stone-500 dark:bg-nature-stone-800 text-white':
+        status === 'absent',
       'bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white':
         status === 'correct' && isHighContrast,
       'bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 text-white':
@@ -53,29 +54,14 @@ export const Key = ({
     event.currentTarget.blur()
   }
 
-  // Framer Motion variants for tactile feedback
-  const keyVariants = {
-    initial: { scale: 1 },
-    tap: { 
-      scale: 0.95,
-      transition: { duration: 0.1, ease: 'easeOut' }
-    },
-    hover: {
-      scale: 1.02,
-      y: -2,
-      transition: { duration: 0.15, ease: 'easeOut' }
-    }
-  }
-
   return (
-    <motion.button 
-      style={styles} 
-      className={classes} 
+    <motion.button
+      style={styles}
+      className={classes}
       onClick={handleClick}
-      variants={keyVariants}
-      initial="initial"
-      whileTap="tap"
-      whileHover="hover"
+      whileTap={{ scale: 0.95 }}
+      whileHover={{ scale: 1.02, y: -2 }}
+      transition={{ duration: 0.15 }}
     >
       <span className="font-display">{children || value}</span>
     </motion.button>
