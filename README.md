@@ -148,39 +148,6 @@ To modify the game to use words of a different length:
 2. Replace the words in [src/constants/wordlist.ts](src/constants/wordlist.ts) with words of the new length
 3. Update [src/constants/validGuesses.ts](src/constants/validGuesses.ts) with valid guesses of the new length
 
-### Adapt for Another Language
-
-To create a version in a different language:
-
-1. **Environment Configuration** ([.env](.env))
-   - Update `REACT_APP_GAME_NAME` and `REACT_APP_GAME_DESCRIPTION`
-
-2. **HTML Configuration** ([public/index.html](public/index.html))
-   - Update the language attribute in the HTML tag
-   - Update the "JavaScript required" message
-   - For RTL languages, add `dir="rtl"` to the HTML tag
-
-3. **PWA Manifest** ([public/manifest.json](public/manifest.json))
-   - Update the app name and short name
-
-4. **Translations** ([src/constants/strings.ts](src/constants/strings.ts))
-   - Translate all UI strings
-
-5. **Word Lists**
-   - Replace words in [src/constants/wordlist.ts](src/constants/wordlist.ts) with target language solution words
-   - Replace words in [src/constants/validGuesses.ts](src/constants/validGuesses.ts) with valid guesses
-
-6. **UI Components**
-   - Update [src/components/modals/SettingsModal.tsx](src/components/modals/SettingsModal.tsx)
-   - Update [src/components/modals/InfoModal.tsx](src/components/modals/InfoModal.tsx)
-
-7. **Keyboard** ([src/components/keyboard/Keyboard.tsx](src/components/keyboard/Keyboard.tsx))
-   - Adapt the keyboard layout for the target language alphabet
-   - For multi-byte characters, use grapheme-splitter throughout the app
-
-8. **RTL Support**
-   - For RTL languages, prepend `\u202E` (Unicode RTL override) in the `generateEmojiGrid` function in [src/lib/share.ts](src/lib/share.ts)
-
 ## Development Scripts
 
 ```bash
@@ -223,5 +190,4 @@ See [LICENSE](LICENSE) file for details.
 ## Acknowledgments
 
 - Original project: [woertchen](https://github.com/diondiondion/woertchen) by diondiondion
-- German word list: [darwinbecker/wordle](https://github.com/darwinbecker/wordle)
 - Original Wordle game by Josh Wardle
