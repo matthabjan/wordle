@@ -38,10 +38,8 @@ export const Keyboard = ({
         onDelete()
       } else {
         const key = e.key.toUpperCase()
-        if (
-          (key.length === 1 && key >= 'A' && key <= 'Z') ||
-          ['Ä', 'Ü', 'Ö'].includes(key)
-        ) {
+        // Only accept A-Z (no umlauts needed for this word list)
+        if (key.length === 1 && key >= 'A' && key <= 'Z') {
           onChar(key)
         }
       }
@@ -55,7 +53,7 @@ export const Keyboard = ({
   return (
     <div>
       <div className="flex justify-center mb-1">
-        {['Q', 'W', 'E', 'R', 'T', 'Z', 'U', 'I', 'O', 'P', 'Ü'].map((key) => (
+        {['Q', 'W', 'E', 'R', 'T', 'Z', 'U', 'I', 'O', 'P'].map((key) => (
           <Key
             value={key}
             key={key}
@@ -65,8 +63,8 @@ export const Keyboard = ({
           />
         ))}
       </div>
-      <div className="flex justify-center mb-1 sm:ml-4">
-        {['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ö', 'Ä'].map((key) => (
+      <div className="flex justify-center mb-1">
+        {['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'].map((key) => (
           <Key
             value={key}
             key={key}
