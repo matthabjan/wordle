@@ -13,18 +13,19 @@ jobs:
 
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
-        node-version: 18  # Adjust the Node.js version if needed
+        node-version: 18
+        cache: 'npm'
 
     - name: Run NPM update
       run: npm update
 
     - name: Commit and create PR
-      uses: peter-evans/create-pull-request@v3
+      uses: peter-evans/create-pull-request@v7
       with:
         title: 'build(deps): Upgrade NPM packages (automated)'
         branch: 'build-deps-upgrade-npm-packages-automated'
