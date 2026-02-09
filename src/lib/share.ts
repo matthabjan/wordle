@@ -7,21 +7,21 @@ import { MAX_CHALLENGES } from '../constants/settings'
 export const shareStatus = (
   guesses: string[],
   lost: boolean,
-  isHardMode: boolean
+  isHardMode: boolean,
 ) => {
   navigator.clipboard.writeText(
     `${GAME_TITLE} ${solutionIndex} ${
       lost ? 'X' : guesses.length
     }/${MAX_CHALLENGES}${isHardMode ? '*' : ''}\n\n${generateEmojiGrid(
-      guesses
-    )}`
+      guesses,
+    )}`,
   )
 }
 
 export const shareStatusWithBBCode = (
   guesses: string[],
   lost: boolean,
-  isHardMode: boolean
+  isHardMode: boolean,
 ) => {
   navigator.clipboard.writeText(
     `${GAME_TITLE}` +
@@ -31,11 +31,8 @@ export const shareStatusWithBBCode = (
       (lost ? 'X' : guesses.length) +
       `/${MAX_CHALLENGES}${isHardMode ? '*' : ''}\n\n` +
       guesses
-        .map(
-          (guess) =>
-            `${generateEmojiGridLine(guess)} ${guess}`
-        )
-        .join('\n')
+        .map((guess) => `${generateEmojiGridLine(guess)} ${guess}`)
+        .join('\n'),
   )
 }
 

@@ -41,7 +41,7 @@ export const Cell = ({
         status === 'present' && !isHighContrast,
       'cell-fill-animation': isFilled,
       'cell-reveal': shouldReveal,
-    }
+    },
   )
 
   return (
