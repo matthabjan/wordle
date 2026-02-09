@@ -41,7 +41,7 @@ services:
   # Optional: Nginx reverse proxy for SSL termination and advanced features
   # Uncomment this section if you need SSL/TLS support
   # nginx-proxy:
-  #   image: nginx:1.27-alpine
+  #   image: nginx:1.28-alpine
   #   container_name: wordle-nginx-proxy
   #   restart: unless-stopped
   #   ports:
