@@ -1,3 +1,11 @@
 html.dark {
-  background-color: rgb(15, 23, 42);
+  background-color: #1c1917;
+}
+
+html {
+  background-color: #fafaf9;
+}
+
+body {
+  min-height: 100dvh;
 }

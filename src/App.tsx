@@ -238,37 +238,42 @@ function App() {
   }
 
   return (
-    <div className="pt-2 pb-8 max-w-7xl mx-auto sm:px-6 lg:px-8">
-      <div className="flex w-80 mx-auto items-center mb-8 mt-20">
-        <h1 className="text-2xl ml-2.5 grow font-bold dark:text-white">
+    <div className="min-h-[100dvh] flex flex-col pt-2 pb-8 max-w-7xl mx-auto sm:px-6 lg:px-8 bg-nature-stone-50 dark:bg-nature-stone-900 transition-colors duration-300">
+      <div className="flex w-full max-w-md mx-auto items-center mb-8 mt-6 px-4 sm:px-0">
+        <h1 className="text-3xl sm:text-4xl ml-2.5 grow font-display font-bold tracking-tight dark:text-nature-stone-50 text-nature-stone-900">
           {GAME_TITLE}
         </h1>
         <InformationCircleIcon
-          className="h-6 w-6 mr-2 cursor-pointer dark:stroke-white"
+          className="h-7 w-7 mr-2 cursor-pointer dark:stroke-nature-stone-200 stroke-nature-stone-700 hover:scale-110 transition-transform duration-200"
           onClick={() => setIsInfoModalOpen(true)}
         />
         <ChartBarIcon
-          className="h-6 w-6 mr-3 cursor-pointer dark:stroke-white"
+          className="h-7 w-7 mr-3 cursor-pointer dark:stroke-nature-stone-200 stroke-nature-stone-700 hover:scale-110 transition-transform duration-200"
           onClick={() => setIsStatsModalOpen(true)}
         />
         <Cog6ToothIcon
-          className="h-6 w-6 mr-3 cursor-pointer dark:stroke-white"
+          className="h-7 w-7 mr-3 cursor-pointer dark:stroke-nature-stone-200 stroke-nature-stone-700 hover:scale-110 transition-transform duration-200"
           onClick={() => setIsSettingsModalOpen(true)}
         />
       </div>
-      <Grid
-        guesses={guesses}
-        currentGuess={currentGuess}
-        isRevealing={isRevealing}
-        currentRowClassName={currentRowClass}
-      />
-      <Keyboard
-        onChar={onChar}
-        onDelete={onDelete}
-        onEnter={onEnter}
-        guesses={guesses}
-        isRevealing={isRevealing}
-      />
+      <div className="flex-1 flex flex-col justify-center items-center px-4">
+        <Grid
+          guesses={guesses}
+          currentGuess={currentGuess}
+          isRevealing={isRevealing}
+          currentRowClassName={currentRowClass}
+          isGameWon={isGameWon}
+        />
+      </div>
+      <div className="px-2 sm:px-4">
+        <Keyboard
+          onChar={onChar}
+          onDelete={onDelete}
+          onEnter={onEnter}
+          guesses={guesses}
+          isRevealing={isRevealing}
+        />
+      </div>
       <InfoModal
         isOpen={isInfoModalOpen}
         handleClose={() => setIsInfoModalOpen(false)}
