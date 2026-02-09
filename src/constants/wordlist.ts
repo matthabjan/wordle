@@ -2,7 +2,7 @@
  * SPOILER ALERT
  *
  * This file contains the solutions to each game of Wordle
- * 
+ *
  * Source: darwinbecker/wordle repository
  * Imported and normalized German 5-letter words
  * Total words: 882
@@ -890,5 +890,5 @@ export const WORDS = [
   'hitze',
   'venus',
   'beleg',
-  'steak'
+  'steak',
 ]
