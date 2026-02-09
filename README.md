@@ -103,10 +103,6 @@ This project uses carefully curated German word lists:
 - **Character Set**: A-Z only (no umlauts for universal compatibility)
 - **Quality**: Zero duplicates, zero invalid entries, 100% coverage
 
-### Word List Source
-
-The word lists are imported from the actively maintained [darwinbecker/wordle](https://github.com/darwinbecker/wordle) repository, ensuring high-quality, recognizable German vocabulary.
-
 ## Technology Stack
 
 - **Frontend**: React 18 with TypeScript
