@@ -40,7 +40,43 @@ The build output will be in the `build/` directory.
 
 ### Docker Support
 
-#### Development Container
+#### Docker Compose (Recommended for Production)
+
+The easiest way to deploy in production:
+
+```bash
+# Quick start
+docker-compose -f docker-compose.prod.yml up -d
+
+# With custom configuration
+cp .env.docker.example .env.docker
+# Edit .env.docker with your settings
+docker-compose --env-file .env.docker -f docker-compose.prod.yml up -d
+
+# Or use the Makefile for easier management
+make up-prod
+```
+
+Open [http://localhost:8080](http://localhost:8080) in your browser.
+
+For detailed Docker Compose documentation including SSL/TLS setup, monitoring, and troubleshooting, see [DOCKER.md](DOCKER.md).
+
+##### Using the Makefile
+
+For simplified Docker management, use the included Makefile:
+
+```bash
+make help         # Show all available commands
+make build-prod   # Build production image
+make up-prod      # Start production container
+make logs-prod    # View logs
+make health       # Check container health
+make down-prod    # Stop container
+```
+
+#### Standalone Docker Containers
+
+##### Development Container
 
 ```bash
 docker build -t wordle:dev .
@@ -49,7 +85,7 @@ docker run -d -p 3000:3000 wordle:dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-#### Production Container
+##### Production Container
 
 ```bash
 docker build --target=prod -t wordle:prod .
