@@ -89,10 +89,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ```bash
 docker build --target=prod -t wordle:prod .
-docker run -d -p 80:8080 wordle:prod
+docker run -d -p 8080:8080 wordle:prod
 ```
 
-Open [http://localhost](http://localhost) in your browser.
+Open [http://localhost:8080](http://localhost:8080) in your browser.
 
 ## Word Lists
 
