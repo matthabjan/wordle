@@ -14,8 +14,8 @@ export const InfoModal = ({ isOpen, handleClose }: Props) => {
       handleClose={handleClose}
     >
       <p>
-        Errate das Wordle des Tages in 6 Versuchen. Nach jedem Versuch wird
-        mit Farben angezeigt, wie nah dein Wort der Lösung war:
+        Errate das Wordle des Tages in 6 Versuchen. Nach jedem Versuch wird mit
+        Farben angezeigt, wie nah dein Wort der Lösung war:
       </p>
 
       <div className="flex justify-center mb-1 mt-4">
@@ -48,7 +48,6 @@ export const InfoModal = ({ isOpen, handleClose }: Props) => {
       <p className="mt-4">
         Jeden Tag um Mitternacht wird ein neues Wordle freigeschaltet.
       </p>
-      
     </BaseModal>
   )
 }
