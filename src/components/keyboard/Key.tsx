@@ -3,6 +3,7 @@ import classnames from 'classnames'
 import { CharStatus } from '../../lib/statuses'
 import { MAX_WORD_LENGTH, REVEAL_TIME_MS } from '../../constants/settings'
 import { getStoredIsHighContrastMode } from '../../lib/localStorage'
+import { motion } from 'framer-motion'
 
 type Props = {
   children?: ReactNode
@@ -25,19 +26,19 @@ export const Key = ({
   const isHighContrast = getStoredIsHighContrastMode()
 
   const classes = classnames(
-    'flex items-center justify-center rounded mx-0.5 text-xs font-bold cursor-pointer select-none dark:text-white',
+    'flex items-center justify-center rounded-lg mx-0.5 text-xs font-semibold cursor-pointer select-none dark:text-white shadow-soft transition-all duration-300',
     {
-      'transition ease-in-out': isRevealing,
-      'bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 active:bg-slate-400':
+      'bg-nature-stone-200 dark:bg-nature-stone-600 hover:bg-nature-stone-300 dark:hover:bg-nature-stone-500 active:scale-95':
         !status,
-      'bg-slate-400 dark:bg-slate-800 text-white': status === 'absent',
+      'bg-nature-stone-500 dark:bg-nature-stone-800 text-white':
+        status === 'absent',
       'bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white':
         status === 'correct' && isHighContrast,
       'bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 text-white':
         status === 'present' && isHighContrast,
-      'bg-green-500 hover:bg-green-600 active:bg-green-700 text-white':
+      'bg-nature-emerald-600 dark:bg-nature-emerald-700 hover:bg-nature-emerald-700 dark:hover:bg-nature-emerald-600 text-white':
         status === 'correct' && !isHighContrast,
-      'bg-yellow-500 hover:bg-yellow-600 active:bg-yellow-700 text-white':
+      'bg-nature-amber-500 dark:bg-nature-amber-600 hover:bg-nature-amber-600 dark:hover:bg-nature-amber-500 text-white':
         status === 'present' && !isHighContrast,
     },
   )
@@ -54,8 +55,15 @@ export const Key = ({
   }
 
   return (
-    <button style={styles} className={classes} onClick={handleClick}>
-      {children || value}
-    </button>
+    <motion.button
+      style={styles}
+      className={classes}
+      onClick={handleClick}
+      whileTap={{ scale: 0.95 }}
+      whileHover={{ scale: 1.02, y: -2 }}
+      transition={{ duration: 0.15 }}
+    >
+      <span className="font-display">{children || value}</span>
+    </motion.button>
   )
 }

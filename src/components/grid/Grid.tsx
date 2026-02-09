@@ -2,12 +2,14 @@ import { MAX_CHALLENGES } from '../../constants/settings'
 import { CompletedRow } from './CompletedRow'
 import { CurrentRow } from './CurrentRow'
 import { EmptyRow } from './EmptyRow'
+import { motion } from 'framer-motion'
 
 type Props = {
   guesses: string[]
   currentGuess: string
   isRevealing?: boolean
   currentRowClassName: string
+  isGameWon?: boolean
 }
 
 export const Grid = ({
@@ -15,6 +17,7 @@ export const Grid = ({
   currentGuess,
   isRevealing,
   currentRowClassName,
+  isGameWon = false,
 }: Props) => {
   const empties =
     guesses.length < MAX_CHALLENGES - 1
@@ -22,13 +25,28 @@ export const Grid = ({
       : []
 
   return (
-    <div className="pb-6">
+    <motion.div className="pb-6">
       {guesses.map((guess, i) => (
-        <CompletedRow
+        <motion.div
           key={i}
-          guess={guess}
-          isRevealing={isRevealing && guesses.length - 1 === i}
-        />
+          animate={
+            isGameWon
+              ? {
+                  scale: [1, 1.05, 1],
+                  y: [0, -4, 0],
+                }
+              : { scale: 1, y: 0 }
+          }
+          transition={{
+            duration: 0.6,
+            delay: isGameWon ? i * 0.1 : 0,
+          }}
+        >
+          <CompletedRow
+            guess={guess}
+            isRevealing={isRevealing && guesses.length - 1 === i}
+          />
+        </motion.div>
       ))}
       {guesses.length < MAX_CHALLENGES && (
         <CurrentRow guess={currentGuess} className={currentRowClassName} />
@@ -36,6 +54,6 @@ export const Grid = ({
       {empties.map((_, i) => (
         <EmptyRow key={i} />
       ))}
-    </div>
+    </motion.div>
   )
 }
