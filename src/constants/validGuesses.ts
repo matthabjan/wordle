@@ -1,7 +1,6 @@
 /**
  * This list contains all valid 5-letter German words for Wordle
  *
- * Source: darwinbecker/wordle repository
  * Imported and normalized German word list
  * Total words: 2411
  */

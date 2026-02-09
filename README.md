@@ -4,7 +4,7 @@ A modern German implementation of the popular Wordle game. This project is origi
 
 ## Features
 
-- **882 Curated German Words** - High-quality word list from [darwinbecker/wordle](https://github.com/darwinbecker/wordle)
+- **Curated German Words** - High-quality word list
 - **Universal Keyboard Support** - Standard A-Z layout works on any keyboard (no special characters required)
 - **Modern React UI** - Built with React 18, TypeScript, and Tailwind CSS
 - **Progressive Web App** - Install and play offline

@@ -166,7 +166,7 @@ Edit `docker-compose.prod.yml` and uncomment the `nginx-proxy` service section a
 
 #### 3. Configure Domain
 
-Edit `docker/proxy/conf.d/wordle.conf` and replace `server_name _;` with your domain:
+Edit `docker/etc/nginx/conf.d/wordle.conf` and replace `server_name _;` with your domain:
 
 ```nginx
 server_name wordle.yourdomain.com;
@@ -425,7 +425,7 @@ Already enabled in the nginx proxy configuration.
 
 ### Enable Gzip Compression
 
-Already enabled in `docker/proxy/nginx.conf`.
+Already enabled in `docker/etc/nginx/nginx.conf`.
 
 ### Cache Static Assets
 

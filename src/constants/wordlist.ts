@@ -3,7 +3,6 @@
  *
  * This file contains the solutions to each game of Wordle
  *
- * Source: darwinbecker/wordle repository
  * Imported and normalized German 5-letter words
  * Total words: 882
  */
