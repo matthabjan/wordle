@@ -474,7 +474,7 @@ Current image size: ~50MB
 For issues related to:
 - **Docker setup**: Check this guide and Docker logs
 - **Application features**: See main [README.md](README.md)
-- **Word lists**: See [COMPLETE_UPDATE_SUMMARY.md](COMPLETE_UPDATE_SUMMARY.md)
+- **Word lists**: See main [README.md](README.md)
 
 ## References
 
