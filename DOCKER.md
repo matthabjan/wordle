@@ -57,7 +57,10 @@ Edit `.env.docker` to configure your deployment:
 WORDLE_PORT=8080
 VITE_GAME_NAME=Wordle
 VITE_GAME_DESCRIPTION=Wordle auf Deutsch
+LEADERBOARD_PASSPHRASE=change-me
 ```
+
+`LEADERBOARD_PASSPHRASE` is the shared secret — anyone who knows it enters it once alongside a display name to use the daily leaderboard; everyone else just plays without it. See [Leaderboard API](#leaderboard-api-optional).
 
 #### 2. Build the Production Image
 
@@ -147,13 +150,16 @@ To change application settings (title, description, etc.):
 
 Build the `wordle:prod` image, then run it from your own Portainer/Traefik stack with **no published host ports**. Traefik terminates TLS and sets HSTS; the app nginx still sends CSP and other security headers.
 
-**Build the image**
+**Build the images**
 
 ```bash
 docker build --target prod -t wordle:prod \
   --build-arg VITE_GAME_NAME="Wordle" \
   --build-arg VITE_GAME_DESCRIPTION="Wordle auf Deutsch" \
   .
+
+# Only needed if you're using the leaderboard — see below.
+docker build -t wordle-leaderboard-api:prod ./server
 ```
 
 **Example Portainer / Compose stack** (adjust entrypoint and middlewares to match your Traefik):
@@ -171,6 +177,7 @@ services:
         max-file: "3"
     networks:
       - proxy
+      - leaderboard-internal
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
@@ -180,9 +187,40 @@ services:
       - "traefik.http.routers.wordle.tls.certresolver=letsencrypt"
       - "traefik.http.services.wordle.loadbalancer.server.port=8080"
 
+  # Optional — powers the daily leaderboard folded into the Stats modal.
+  # Omit this service entirely and the app keeps working normally; nginx's
+  # /api/ proxy just 502s and the frontend fails silently. Must be named
+  # "leaderboard-api" and share a network with "wordle" — nginx resolves that name
+  # at request time (see docker/etc/nginx/conf.d/default.conf).
+  leaderboard-api:
+    image: wordle-leaderboard-api:prod
+    container_name: leaderboard-api
+    restart: unless-stopped
+    environment:
+      - LEADERBOARD_PASSPHRASE=${LEADERBOARD_PASSPHRASE}
+    volumes:
+      - leaderboard-data:/data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - leaderboard-internal
+
 networks:
   proxy:
     external: true
+  # Private link between wordle and leaderboard-api only — not exposed to Traefik.
+  leaderboard-internal:
+    driver: bridge
+
+volumes:
+  leaderboard-data:
 ```
 
 **Firewall checklist**
@@ -228,6 +266,23 @@ wordle.yourdomain.com {
 ```
 
 Let Caddy/Traefik set HSTS; the app image already sends CSP and related headers.
+
+## Leaderboard API (optional)
+
+`server/` is a small Fastify + SQLite service that powers the daily leaderboard folded into the Stats modal. It's entirely optional — the core game works identically with or without it.
+
+- **Auth**: one shared `LEADERBOARD_PASSPHRASE` env var; anyone who knows it enters it once alongside a display name, cached in `localStorage` on their device. There's no per-person account — the passphrase is the only gate.
+- **Data**: one SQLite file (`/data/leaderboard.db` inside the container), one row per `(date, name)`, kept forever — never deleted or overwritten across days, only upserted for the same person on the same day.
+- **Reveal**: a viewer only sees full guess grids for others once they've submitted their own result for that day; until then they see just name + guess count.
+- **Failure mode**: nginx proxies `/api/` to the `leaderboard-api` container using Docker's embedded DNS resolved at request time (not at nginx startup) — so if `leaderboard-api` is stopped, removed, or never deployed, the main app still starts and plays normally; the leaderboard section in Stats just shows nothing or "derzeit nicht verfügbar".
+- **Local dev**: `cd server && LEADERBOARD_PASSPHRASE=devsecret npm install && npm start` runs it on `:3001`; `vite.config.ts` already proxies `/api` there for `npm run dev`.
+
+**Backup**: the leaderboard data lives in the `leaderboard-data` Docker volume (SQLite file). Back it up like any other volume:
+
+```bash
+docker run --rm -v leaderboard-data:/data -v "$PWD":/backup alpine \
+  tar czf /backup/leaderboard-data-backup.tar.gz -C /data .
+```
 
 ## Monitoring and Logs
 
@@ -434,6 +489,7 @@ The production image uses multi-stage builds and Alpine Linux. Build args bake `
 5. **Firewall**: only 80/443 to Traefik; never expose 8080 publicly
 6. **Keep images updated** and scan (`docker scout` / Trivy)
 7. **No secrets in the SPA** — `VITE_*` are public build-time strings only
+8. **leaderboard-api** (if used): no host ports, `cap_drop: ALL`, non-root user, isolated on its own internal network — never on the Traefik-facing network
 
 ## Production Checklist
 
@@ -445,6 +501,7 @@ The production image uses multi-stage builds and Alpine Linux. Build args bake `
 - [ ] Fonts served from `/fonts/` (same origin)
 - [ ] Log rotation configured
 - [ ] Backup / rollback plan ready
+- [ ] If using the leaderboard: `LEADERBOARD_PASSPHRASE` set to a real value (not `change-me`), `leaderboard-api` built and reachable as that exact container name, `leaderboard-data` volume included in backups
 
 ## Support
 

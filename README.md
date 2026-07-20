@@ -8,10 +8,14 @@ A modern German implementation of the popular Wordle game. This project is origi
 - **Universal Keyboard Support** - Standard A-Z layout works on any keyboard (no special characters required)
 - **Cursor-based editing** - Tap any letter in the current row to change it
 - **Modern React UI** - Built with Vite, React 18, TypeScript, and Tailwind CSS 4
-- **Progressive Web App** - Install and play offline
-- **Dark Mode Support** - Comfortable gameplay in any lighting
+- **Progressive Web App** - Install and play offline; tuned for a native-app feel on iOS/Android home screens (status bar, splash, no tap-highlight flash)
+- **Dark Mode & High-Contrast Mode** - Comfortable gameplay in any lighting, plus a colorblind-friendly palette
+- **Hard Mode** - Optional challenge mode that enforces reusing revealed hints
+- **Haptic Feedback** - Subtle vibration on key actions (skipped under reduced-motion)
+- **Win Celebration** - A small animated flourish on a win (skipped under reduced-motion)
 - **Statistics Tracking** - Track your progress and winning streaks
-- **Share Results** - Native share or clipboard
+- **Daily Leaderboard (optional)** - Passphrase-gated comparison with anyone else who knows it; self-hosted, no accounts, fails silently if not deployed — see [Daily Leaderboard](#daily-leaderboard-optional)
+- **Share Results** - Native share or clipboard, with a spoiler variant for close friends
 - **Mobile-first Design** - Optimized for one-handed phone play
 
 ## Quick Start
@@ -59,6 +63,8 @@ make up-prod
 ```
 
 Open [http://localhost:8080](http://localhost:8080) in your browser.
+
+`docker-compose.prod.yml` also includes an optional `leaderboard-api` service for the daily leaderboard (set `LEADERBOARD_PASSPHRASE` in `.env.docker` to enable it — see [Daily Leaderboard](#daily-leaderboard-optional)). Omit it and the app works identically without a leaderboard.
 
 For detailed Docker Compose documentation including SSL/TLS setup, monitoring, and troubleshooting, see [DOCKER.md](DOCKER.md).
 
@@ -114,6 +120,7 @@ This project uses carefully curated German word lists:
 - **Testing**: Vitest and React Testing Library
 - **Code Quality**: Prettier, Husky pre-commit hooks
 - **Motion**: Framer Motion
+- **Leaderboard backend** (optional, `server/`): Fastify + better-sqlite3
 
 ## Project Structure
 
@@ -123,15 +130,17 @@ wordle/
 ├── src/
 │   ├── components/   # React components
 │   │   ├── alerts/   # Alert notifications
+│   │   ├── effects/  # Win celebration and other one-off animations
 │   │   ├── grid/     # Game grid and cells
 │   │   ├── keyboard/ # Virtual keyboard
 │   │   ├── modals/   # Info, Settings, Stats modals
-│   │   └── stats/    # Statistics and progress tracking
+│   │   └── stats/    # Statistics, progress tracking, and the leaderboard
 │   ├── constants/    # Game settings and word lists
 │   ├── context/      # React context providers
 │   ├── hooks/        # useGameState, useTheme, useWordOfDay
 │   └── lib/          # Utility functions
 ├── docker/           # Docker / nginx configuration
+├── server/           # Optional Fastify + SQLite leaderboard API
 └── .github/          # GitHub Actions workflows
 ```
 
@@ -165,6 +174,17 @@ npm run fix        # Auto-fix formatting issues
 - **Character Set**: A-Z (26 letters)
 - **Daily Puzzle**: New word every day
 - **Hard Mode**: Optional challenge mode
+
+## Daily Leaderboard (optional)
+
+The Stats modal can show a daily leaderboard of everyone who knows a shared passphrase — no accounts, no sign-up. It's powered by a small, optional service in [server/](server/) and works like this:
+
+- **Join**: enter any name plus the shared passphrase, once per device (cached in `localStorage`).
+- **Submit**: your result posts automatically when a game ends — no extra step.
+- **Reveal is gated**: you see who's played and their guess count right away, but full guess grids only unlock once you've finished today's word yourself — so opening Stats mid-game can't spoil anything.
+- **Fails silently**: if the backend isn't deployed, isn't reachable, or you never set up a name, the game is completely unaffected — the leaderboard section just doesn't show anything.
+
+Enabling it requires deploying `server/` alongside the app and setting a `LEADERBOARD_PASSPHRASE`. See [DOCKER.md → Leaderboard API](DOCKER.md#leaderboard-api-optional) for the full setup (Docker Compose service, Traefik/Portainer wiring, backups) and local dev instructions.
 
 ## Browser Support
 

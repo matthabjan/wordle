@@ -8,7 +8,9 @@ import {
 } from '../../constants/strings'
 import { GameStats } from '../../lib/localStorage'
 import { shareStatus, shareStatusWithBBCode } from '../../lib/share'
+import { getDateForSolutionIndex } from '../../lib/words'
 import { Histogram } from '../stats/Histogram'
+import { Leaderboard } from '../stats/Leaderboard'
 import { StatBar } from '../stats/StatBar'
 import { BaseModal } from './BaseModal'
 
@@ -44,18 +46,6 @@ export const StatsModal = ({
   const shareButtonClass =
     'mt-2 w-full rounded-xl border border-transparent px-4 py-3 text-base font-medium text-white shadow-soft bg-[var(--accent-color)] hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 sm:text-sm dark:focus-visible:ring-offset-nature-stone-800'
 
-  if (gameStats.totalGames <= 0) {
-    return (
-      <BaseModal
-        title={STATISTICS_TITLE}
-        isOpen={isOpen}
-        handleClose={handleClose}
-      >
-        <StatBar gameStats={gameStats} />
-      </BaseModal>
-    )
-  }
-
   return (
     <BaseModal
       title={STATISTICS_TITLE}
@@ -63,68 +53,79 @@ export const StatsModal = ({
       handleClose={handleClose}
     >
       <StatBar gameStats={gameStats} />
-      <h4 className="mt-4 font-display text-lg leading-6 font-semibold text-nature-stone-900 dark:text-nature-stone-50">
-        {GUESS_DISTRIBUTION_TEXT}
-      </h4>
-      <Histogram gameStats={gameStats} />
-      {(isGameLost || isGameWon) && (
-        <div className="mt-4 dark:text-nature-stone-50">
-          <div className="mb-2">
-            <h5 className="text-sm text-nature-stone-600 dark:text-nature-stone-300">
-              {NEW_WORD_TEXT}
-            </h5>
-            <Countdown
-              className="font-display text-lg font-medium text-nature-stone-900 dark:text-nature-stone-50"
-              date={tomorrow}
-              daysInHours={true}
-            />
-          </div>
-          <div>
-            <button
-              type="button"
-              className={shareButtonClass}
-              onClick={async () => {
-                try {
-                  const result = await shareStatus(
-                    guesses,
-                    isGameLost,
-                    isHardMode,
-                    solutionIndex,
-                    solution,
-                  )
-                  if (result === 'copied') {
-                    handleShare()
-                  }
-                } catch {
-                  handleShareFailure()
-                }
-              }}
-            >
-              {SHARE_TEXT}
-            </button>
-            <button
-              type="button"
-              className={`${shareButtonClass} bg-nature-stone-600 hover:bg-nature-stone-700`}
-              onClick={async () => {
-                try {
-                  await shareStatusWithBBCode(
-                    guesses,
-                    isGameLost,
-                    isHardMode,
-                    solutionIndex,
-                    solution,
-                  )
-                  handleShare()
-                } catch {
-                  handleShareFailure()
-                }
-              }}
-            >
-              {SHARE_SPOILER_TEXT}
-            </button>
-          </div>
-        </div>
+      {gameStats.totalGames > 0 && (
+        <>
+          <h4 className="mt-4 font-display text-lg leading-6 font-semibold text-nature-stone-900 dark:text-nature-stone-50">
+            {GUESS_DISTRIBUTION_TEXT}
+          </h4>
+          <Histogram gameStats={gameStats} />
+          {(isGameLost || isGameWon) && (
+            <div className="mt-4 dark:text-nature-stone-50">
+              <div className="mb-2">
+                <h5 className="text-sm text-nature-stone-600 dark:text-nature-stone-300">
+                  {NEW_WORD_TEXT}
+                </h5>
+                <Countdown
+                  className="font-display text-lg font-medium text-nature-stone-900 dark:text-nature-stone-50"
+                  date={tomorrow}
+                  daysInHours={true}
+                />
+              </div>
+              <div>
+                <button
+                  type="button"
+                  className={shareButtonClass}
+                  onClick={async () => {
+                    try {
+                      const result = await shareStatus(
+                        guesses,
+                        isGameLost,
+                        isHardMode,
+                        solutionIndex,
+                        solution,
+                      )
+                      if (result === 'copied') {
+                        handleShare()
+                      }
+                    } catch {
+                      handleShareFailure()
+                    }
+                  }}
+                >
+                  {SHARE_TEXT}
+                </button>
+                <button
+                  type="button"
+                  className={`${shareButtonClass} bg-nature-stone-600 hover:bg-nature-stone-700`}
+                  onClick={async () => {
+                    try {
+                      await shareStatusWithBBCode(
+                        guesses,
+                        isGameLost,
+                        isHardMode,
+                        solutionIndex,
+                        solution,
+                      )
+                      handleShare()
+                    } catch {
+                      handleShareFailure()
+                    }
+                  }}
+                >
+                  {SHARE_SPOILER_TEXT}
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
+      <Leaderboard
+        date={getDateForSolutionIndex(solutionIndex)}
+        solution={solution}
+        isOpen={isOpen}
+        isGameWon={isGameWon}
+        isGameLost={isGameLost}
+      />
     </BaseModal>
   )
 }

@@ -44,3 +44,20 @@ export const EDIT_LETTER_LABEL = (position: number) =>
 export const STATUS_CORRECT = 'richtig'
 export const STATUS_PRESENT = 'an falscher Stelle'
 export const STATUS_ABSENT = 'nicht enthalten'
+
+export const LEADERBOARD_TITLE = 'Bestenliste'
+export const LEADERBOARD_SETUP_INTRO =
+  'Vergleiche dein Ergebnis mit anderen. Wer das Passwort kennt, kann mitmachen.'
+export const LEADERBOARD_NAME_LABEL = 'Dein Name'
+export const LEADERBOARD_PASSPHRASE_LABEL = 'Passwort'
+export const LEADERBOARD_JOIN_BUTTON = 'Verbinden'
+export const LEADERBOARD_JOINING_TEXT = 'Verbinde …'
+export const LEADERBOARD_WRONG_PASSPHRASE_MESSAGE = 'Passwort falsch'
+export const LEADERBOARD_MISSING_FIELDS_MESSAGE =
+  'Bitte Name und Passwort eingeben'
+export const LEADERBOARD_CHANGE_IDENTITY_TEXT = 'Namen ändern'
+export const LEADERBOARD_YOU_SUFFIX = '(Du)'
+export const LEADERBOARD_LOST_LABEL = 'X/6'
+export const LEADERBOARD_EMPTY_TEXT = 'Noch niemand hat heute gespielt.'
+export const LEADERBOARD_UNAVAILABLE_TEXT =
+  'Bestenliste derzeit nicht verfügbar.'

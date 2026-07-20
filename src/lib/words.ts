@@ -62,10 +62,11 @@ export const findFirstUnusedReveal = (
   return false
 }
 
+// February 9, 2026 Game Epoch (local midnight) — solutionIndex 0
+const GAME_EPOCH = new Date(2026, 1, 9)
+
 export const getWordOfDay = (now = new Date()): WordOfDay => {
-  // February 9, 2026 Game Epoch (local midnight)
-  const epoch = new Date(2026, 1, 9)
-  const start = new Date(epoch)
+  const start = new Date(GAME_EPOCH)
   const today = new Date(now)
   today.setHours(0, 0, 0, 0)
 
@@ -83,4 +84,15 @@ export const getWordOfDay = (now = new Date()): WordOfDay => {
     solutionIndex: index,
     tomorrow: nextDay.valueOf(),
   }
+}
+
+// ISO date (YYYY-MM-DD, local) for a given solutionIndex — keyed to the same
+// epoch as getWordOfDay so leaderboard entries line up with the daily word.
+export const getDateForSolutionIndex = (solutionIndex: number): string => {
+  const date = new Date(GAME_EPOCH)
+  date.setDate(date.getDate() + solutionIndex)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }

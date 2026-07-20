@@ -42,6 +42,41 @@ services:
     networks:
       - wordle-network
 
+  # Daily leaderboard — nginx proxies /api/ here (see docker/etc/nginx/conf.d/default.conf).
+  # Anyone who knows LEADERBOARD_PASSPHRASE can participate under any name; others can
+  # just keep playing without it. Must be reachable as "leaderboard-api" on
+  # wordle-network; the wordle app keeps working without it (fails silently), but this
+  # container name is not optional.
+  leaderboard-api:
+    build:
+      context: ./server
+    image: wordle-leaderboard-api:prod
+    container_name: leaderboard-api
+    restart: unless-stopped
+    environment:
+      - LEADERBOARD_PASSPHRASE=${LEADERBOARD_PASSPHRASE}
+      - PORT=3001
+      - DB_PATH=/data/leaderboard.db
+    volumes:
+      - leaderboard-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - wordle-network
+
   # Optional legacy SSL proxy — prefer Traefik/Portainer for public HTTPS.
   # nginx-proxy:
   #   image: nginx:1.28-alpine
@@ -50,3 +85,6 @@ services:
 networks:
   wordle-network:
     driver: bridge
+
+volumes:
+  leaderboard-data:

@@ -2,8 +2,15 @@
 
 # dependencies
 /node_modules
+server/node_modules
 /.pnp
 .pnp.js
+
+# leaderboard API local dev database
+server/*.db
+server/*.db-journal
+server/*.db-wal
+server/*.db-shm
 
 # testing
 /coverage

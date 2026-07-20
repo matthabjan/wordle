@@ -8,6 +8,12 @@ export default defineConfig({
   build: {
     sourcemap: false,
   },
+  server: {
+    proxy: {
+      // Leaderboard API — run `npm start` in server/ locally to back this.
+      '/api': 'http://localhost:3001',
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),

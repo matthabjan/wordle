@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-German Wordle (Vite + React 18 + TypeScript + Tailwind 4). Client-only PWA; game state lives in `localStorage`. Forked from [woertchen](https://github.com/diondiondion/woertchen).
+German Wordle (Vite + React 18 + TypeScript + Tailwind 4). Client-only PWA; game state lives in `localStorage`. An optional self-hosted `server/` service adds a passphrase-gated daily leaderboard — the core game works identically with or without it. Forked from [woertchen](https://github.com/diondiondion/woertchen).
 
 ## Commands
 
@@ -23,6 +23,8 @@ make health  # container health
 ```
 
 For public Traefik/Portainer deploy: build `wordle:prod`, run your own stack (no host port 8080). See `DOCKER.md`.
+
+Leaderboard backend, local dev: `cd server && LEADERBOARD_PASSPHRASE=devsecret npm install && npm start` → `:3001`; `vite.config.ts` proxies `/api` there for `npm run dev`.
 
 Security notes for public deploy:
 
@@ -50,8 +52,9 @@ src/
   lib/
     words.ts              # solution-of-day, validation, hard mode
     statuses.ts           # letter status (correct/present/absent)
-    stats.ts localStorage.ts share.ts haptics.ts
+    stats.ts localStorage.ts share.ts haptics.ts leaderboard.ts
 docker/                   # nginx configs for prod image
+server/                   # optional Fastify+SQLite leaderboard API (see DOCKER.md)
 ```
 
 ## Conventions
@@ -73,6 +76,15 @@ docker/                   # nginx configs for prod image
 - Current row supports cursor-based editing (tap a cell to overwrite).
 - Persisted game/stats must stay compatible with existing `localStorage` keys unless migrating intentionally.
 
+## Leaderboard (optional, do not break)
+
+- Lives in `src/lib/leaderboard.ts` + `src/components/stats/Leaderboard.tsx` (folded into `StatsModal`), backed by `server/` (Fastify + SQLite) and proxied same-origin at `/api/*` (see `docker/etc/nginx/conf.d/default.conf`).
+- Gate is a single shared passphrase (`LEADERBOARD_PASSPHRASE` env var on the server) — no per-user accounts. Anyone who knows it can join under any name; everyone else just plays without it.
+- Identity (`leaderboardName` / `leaderboardPassphrase`) is cached in `localStorage`; distinct keys from the core game state, additive only.
+- Reveal is gated server-side: a viewer only receives other players' guess grids once they've submitted their own result for that date (see `GET /api/leaderboard` in `server/index.js`).
+- Must fail silently and never block the core game: submission (`submitLeaderboardResult`) swallows errors, and nginx resolves the `leaderboard-api` upstream at request time (not at startup) so the app still serves the game if that container is absent or down.
+- Every `(date, name)` submission is upserted, never deleted — this keeps the door open for future all-time stats without a schema change.
+
 ## Changing word length or lists
 
 1. Update `MAX_WORD_LENGTH` in `src/constants/settings.ts`.
@@ -92,3 +104,5 @@ docker/                   # nginx configs for prod image
 - `GAME_TITLE` comes from `import.meta.env.VITE_GAME_NAME` — ensure env is set for builds that need a title.
 - Reveal animations use `REVEAL_TIME_MS`; lose/win delays depend on it — don't hardcode timings elsewhere.
 - PWA service worker is registered via `vite-plugin-pwa` (`virtual:pwa-register`).
+- `WinCelebration` (in `src/components/effects/`) triggers once per fresh win via a transition-detecting ref, not on `isGameWon` alone — otherwise reloading an already-won day would replay it. It renders nothing under `prefers-reduced-motion`, matching every other animation in the app.
+- `server/` has its own `package.json`/`node_modules`, separate from the root — `npm install` at repo root does not install it; `cd server && npm install`.
