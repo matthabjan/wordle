@@ -57,8 +57,6 @@ Edit `.env.docker` to configure your deployment:
 WORDLE_PORT=8080
 VITE_GAME_NAME=Wordle 2.1
 VITE_GAME_DESCRIPTION=Wordle auf Deutsch
-# For Traefik:
-# WORDLE_HOST=wordle.yourdomain.com
 ```
 
 #### 2. Build the Production Image
