@@ -13,22 +13,23 @@ export const InfoModal = ({ isOpen, handleClose }: Props) => {
       isOpen={isOpen}
       handleClose={handleClose}
     >
-      <p>
+      <p className="text-left">
         Errate das Wordle des Tages in 6 Versuchen. Nach jedem Versuch wird mit
-        Farben angezeigt, wie nah dein Wort der Lösung war:
+        Farben angezeigt, wie nah dein Wort der Lösung war. Tippe auf einen
+        Buchstaben in der aktuellen Zeile, um ihn direkt zu ändern.
       </p>
 
-      <div className="flex justify-center mb-1 mt-4">
+      <div className="mt-4 mb-1 flex justify-center">
         <Cell value="A" />
         <Cell value="L" />
         <Cell value="L" />
-        <Cell value="E" status="correct" />
+        <Cell value="E" status="correct" isCompleted />
         <Cell value="S" />
       </div>
       <p>Das E kommt im Wort an der richtigen Stelle vor.</p>
 
-      <div className="flex justify-center mb-1 mt-4">
-        <Cell value="L" status="present" />
+      <div className="mt-4 mb-1 flex justify-center">
+        <Cell value="L" status="present" isCompleted />
         <Cell value="A" />
         <Cell value="U" />
         <Cell value="C" />
@@ -36,16 +37,16 @@ export const InfoModal = ({ isOpen, handleClose }: Props) => {
       </div>
       <p>Das L kommt im Wort vor, jedoch an anderer Stelle.</p>
 
-      <div className="flex justify-center mb-1 mt-4">
+      <div className="mt-4 mb-1 flex justify-center">
         <Cell value="O" />
         <Cell value="T" />
         <Cell value="T" />
         <Cell value="O" />
-        <Cell value="S" status="absent" />
+        <Cell value="S" status="absent" isCompleted />
       </div>
       <p>Das S kommt nicht im Wort vor.</p>
 
-      <p className="mt-4">
+      <p className="mt-4 text-left">
         Jeden Tag um Mitternacht wird ein neues Wordle freigeschaltet.
       </p>
     </BaseModal>

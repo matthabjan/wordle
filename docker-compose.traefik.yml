@@ -1,0 +1,51 @@
+# Traefik overlay for home-server deployment.
+#
+# Prerequisites:
+#   - Traefik running and attached to an external Docker network named "proxy"
+#   - A Let's Encrypt (or other) cert resolver named "letsencrypt"
+#   - EntryPoint "websecure" (HTTPS)
+#
+# Usage:
+#   cp .env.docker.example .env.docker
+#   # set WORDLE_HOST=wordle.example.com and VITE_* as needed
+#   docker network create proxy   # if it does not exist yet
+#   docker compose --env-file .env.docker \
+#     -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d --build
+#
+# Firewall: only expose 80/443 on Traefik. Do NOT publish Wordle's 8080.
+
+services:
+  wordle:
+    ports: !reset []
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777,size=16m
+      - /var/cache/nginx:mode=0755,uid=1001,gid=1001,size=32m
+      - /var/run:mode=0755,uid=1001,gid=1001,size=8m
+      - /var/log/nginx:mode=0755,uid=1001,gid=1001,size=16m
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.wordle.rule=Host(`${WORDLE_HOST:?Set WORDLE_HOST in .env.docker}`)
+      - traefik.http.routers.wordle.entrypoints=websecure
+      - traefik.http.routers.wordle.tls=true
+      - traefik.http.routers.wordle.tls.certresolver=letsencrypt
+      - traefik.http.services.wordle.loadbalancer.server.port=8080
+      # Optional HTTP→HTTPS redirect router (skip if Traefik already redirects globally)
+      - traefik.http.routers.wordle-http.rule=Host(`${WORDLE_HOST}`)
+      - traefik.http.routers.wordle-http.entrypoints=web
+      - traefik.http.routers.wordle-http.middlewares=wordle-https-redirect
+      - traefik.http.middlewares.wordle-https-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.wordle-https-redirect.redirectscheme.permanent=true
+    networks:
+      - wordle-network
+      - proxy
+
+networks:
+  proxy:
+    external: true
+    name: proxy

@@ -6,12 +6,12 @@ type Props = {
 
 export const Progress = ({ index, size, label }: Props) => {
   return (
-    <div className="flex justify-left m-1">
-      <div className="items-center justify-center w-2">{index + 1}</div>
-      <div className="rounded-full w-full ml-2">
+    <div className="m-1 flex justify-left" aria-hidden="true">
+      <div className="w-2 items-center justify-center">{index + 1}</div>
+      <div className="ml-2 w-full rounded-full">
         <div
           style={{ width: `${5 + size}%` }}
-          className="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 rounded-l-full"
+          className="rounded-l-full bg-nature-emerald-600 p-0.5 text-center text-xs font-medium text-nature-emerald-50"
         >
           {label}
         </div>

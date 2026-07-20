@@ -1,4 +1,4 @@
-# Wordle 2.0 - German Edition
+# Wordle 2.1 - German Edition
 
 A modern German implementation of the popular Wordle game. This project is originally forked from [woertchen](https://github.com/diondiondion/woertchen) and features a curated German word list with enhanced accessibility and universal keyboard support.
 
@@ -6,12 +6,13 @@ A modern German implementation of the popular Wordle game. This project is origi
 
 - **Curated German Words** - High-quality word list
 - **Universal Keyboard Support** - Standard A-Z layout works on any keyboard (no special characters required)
-- **Modern React UI** - Built with React 18, TypeScript, and Tailwind CSS
+- **Cursor-based editing** - Tap any letter in the current row to change it
+- **Modern React UI** - Built with Vite, React 18, TypeScript, and Tailwind CSS 4
 - **Progressive Web App** - Install and play offline
 - **Dark Mode Support** - Comfortable gameplay in any lighting
 - **Statistics Tracking** - Track your progress and winning streaks
-- **Share Results** - Share your daily results with friends
-- **Responsive Design** - Optimized for desktop and mobile devices
+- **Share Results** - Native share or clipboard
+- **Mobile-first Design** - Optimized for one-handed phone play
 
 ## Quick Start
 
@@ -23,10 +24,10 @@ Clone the repository and start the development server:
 git clone <repository-url>
 cd wordle
 npm install
-npm start
+npm run dev
 ```
 
-The app will open at [http://localhost:3000](http://localhost:3000)
+The app will open at [http://localhost:5173](http://localhost:5173)
 
 ### Build for Production
 
@@ -36,7 +37,7 @@ Create an optimized production build:
 npm run build
 ```
 
-The build output will be in the `build/` directory.
+The build output will be in the `dist/` directory.
 
 ### Docker Support
 
@@ -105,21 +106,20 @@ This project uses carefully curated German word lists:
 
 ## Technology Stack
 
-- **Frontend**: React 18 with TypeScript
-- **Styling**: Tailwind CSS with custom components
+- **Frontend**: React 18 with TypeScript 5
+- **Styling**: Tailwind CSS 4 with a nature-inspired design system
 - **UI Components**: Headless UI for accessible modals
 - **Icons**: Heroicons
-- **Build Tool**: Create React App with React Scripts 5
-- **Testing**: Jest and React Testing Library
-- **Code Quality**: Prettier, ESLint, Husky pre-commit hooks
-- **Date Handling**: date-fns
-- **Utilities**: grapheme-splitter for proper Unicode handling
+- **Build Tool**: Vite 6 with vite-plugin-pwa
+- **Testing**: Vitest and React Testing Library
+- **Code Quality**: Prettier, Husky pre-commit hooks
+- **Motion**: Framer Motion
 
 ## Project Structure
 
 ```
 wordle/
-├── public/           # Static assets and PWA configuration
+├── public/           # Static assets and PWA icons
 ├── src/
 │   ├── components/   # React components
 │   │   ├── alerts/   # Alert notifications
@@ -129,8 +129,9 @@ wordle/
 │   │   └── stats/    # Statistics and progress tracking
 │   ├── constants/    # Game settings and word lists
 │   ├── context/      # React context providers
+│   ├── hooks/        # useGameState, useTheme, useWordOfDay
 │   └── lib/          # Utility functions
-├── docker/           # Docker configuration
+├── docker/           # Docker / nginx configuration
 └── .github/          # GitHub Actions workflows
 ```
 
@@ -147,9 +148,12 @@ To modify the game to use words of a different length:
 ## Development Scripts
 
 ```bash
-npm start          # Start development server
-npm run build      # Build for production
-npm test           # Run tests
+npm run dev        # Start Vite development server
+npm start          # Alias for npm run dev
+npm run build      # Build for production → dist/
+npm run preview    # Preview production build
+npm test           # Run Vitest once
+npm run test:watch # Vitest watch mode
 npm run lint       # Check code formatting
 npm run fix        # Auto-fix formatting issues
 ```

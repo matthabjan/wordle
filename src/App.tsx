@@ -1,279 +1,149 @@
 import {
-  InformationCircleIcon,
   ChartBarIcon,
   Cog6ToothIcon,
+  InformationCircleIcon,
 } from '@heroicons/react/24/outline'
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import './App.css'
+import { AlertContainer } from './components/alerts/AlertContainer'
 import { Grid } from './components/grid/Grid'
 import { Keyboard } from './components/keyboard/Keyboard'
 import { InfoModal } from './components/modals/InfoModal'
-import { StatsModal } from './components/modals/StatsModal'
 import { SettingsModal } from './components/modals/SettingsModal'
+import { StatsModal } from './components/modals/StatsModal'
 import {
-  GAME_TITLE,
-  WIN_MESSAGES,
   GAME_COPIED_MESSAGE,
-  NOT_ENOUGH_LETTERS_MESSAGE,
-  WORD_NOT_FOUND_MESSAGE,
-  CORRECT_WORD_MESSAGE,
-  HARD_MODE_ALERT_MESSAGE,
+  GAME_TITLE,
+  SHARE_FAILED_MESSAGE,
+  UPDATE_AVAILABLE_MESSAGE,
 } from './constants/strings'
-import {
-  MAX_WORD_LENGTH,
-  MAX_CHALLENGES,
-  ALERT_TIME_MS,
-  REVEAL_TIME_MS,
-  GAME_LOST_INFO_DELAY,
-} from './constants/settings'
-import {
-  isWordInWordList,
-  isWinningWord,
-  solution,
-  findFirstUnusedReveal,
-} from './lib/words'
-import { addStatsForCompletedGame, loadStats } from './lib/stats'
-import {
-  loadGameStateFromLocalStorage,
-  saveGameStateToLocalStorage,
-  setStoredIsHighContrastMode,
-  getStoredIsHighContrastMode,
-} from './lib/localStorage'
-
-import './App.css'
-import { AlertContainer } from './components/alerts/AlertContainer'
 import { useAlert } from './context/AlertContext'
+import { useGameState } from './hooks/useGameState'
+import { useTheme } from './hooks/useTheme'
+import { useWordOfDay } from './hooks/useWordOfDay'
+import { loadGameStateFromLocalStorage } from './lib/localStorage'
 
 function App() {
-  const prefersDarkMode = window.matchMedia(
-    '(prefers-color-scheme: dark)',
-  ).matches
-
+  const { solution, solutionIndex, tomorrow } = useWordOfDay()
   const { showError: showErrorAlert, showSuccess: showSuccessAlert } =
     useAlert()
-  const [currentGuess, setCurrentGuess] = useState('')
-  const [isGameWon, setIsGameWon] = useState(false)
+  const {
+    isDarkMode,
+    isHighContrastMode,
+    handleDarkMode,
+    handleHighContrastMode,
+  } = useTheme()
+
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false)
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
-  const [currentRowClass, setCurrentRowClass] = useState('')
-  const [isGameLost, setIsGameLost] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(
-    localStorage.getItem('theme')
-      ? localStorage.getItem('theme') === 'dark'
-      : prefersDarkMode
-        ? true
-        : false,
-  )
-  const [isHighContrastMode, setIsHighContrastMode] = useState(
-    getStoredIsHighContrastMode(),
-  )
-  const [isRevealing, setIsRevealing] = useState(false)
-  const [guesses, setGuesses] = useState<string[]>(() => {
-    const loaded = loadGameStateFromLocalStorage()
-    if (loaded?.solution !== solution) {
-      return []
-    }
-    const gameWasWon = loaded.guesses.includes(solution)
-    if (gameWasWon) {
-      setIsGameWon(true)
-    }
-    if (loaded.guesses.length === MAX_CHALLENGES && !gameWasWon) {
-      setIsGameLost(true)
-      showErrorAlert(CORRECT_WORD_MESSAGE(solution), {
-        persist: true,
-      })
-    }
-    return loaded.guesses
-  })
+  const [updateAvailable, setUpdateAvailable] = useState(false)
 
-  const [stats, setStats] = useState(() => loadStats())
+  const onOpenStats = useCallback(() => setIsStatsModalOpen(true), [])
 
-  const [isHardMode, setIsHardMode] = useState(
-    localStorage.getItem('gameMode')
-      ? localStorage.getItem('gameMode') === 'hard'
-      : false,
-  )
+  const {
+    currentGuess,
+    cursorIndex,
+    guesses,
+    isGameWon,
+    isGameLost,
+    isRevealing,
+    currentRowClass,
+    stats,
+    isHardMode,
+    handleHardMode,
+    onChar,
+    onDelete,
+    onEnter,
+    setCursor,
+    moveCursor,
+  } = useGameState({ solution, solutionIndex, onOpenStats })
 
   useEffect(() => {
-    // if no game state on load,
-    // show the user the how-to info modal
     if (!loadGameStateFromLocalStorage()) {
       setIsInfoModalOpen(true)
     }
   }, [])
 
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
+    const onUpdate = () => setUpdateAvailable(true)
+    window.addEventListener('pwa-update-available', onUpdate)
+    return () => window.removeEventListener('pwa-update-available', onUpdate)
+  }, [])
 
-    if (isHighContrastMode) {
-      document.documentElement.classList.add('high-contrast')
-    } else {
-      document.documentElement.classList.remove('high-contrast')
-    }
-  }, [isDarkMode, isHighContrastMode])
-
-  const handleDarkMode = (isDark: boolean) => {
-    setIsDarkMode(isDark)
-    localStorage.setItem('theme', isDark ? 'dark' : 'light')
-  }
-
-  const handleHardMode = (isHard: boolean) => {
-    if (guesses.length === 0 || localStorage.getItem('gameMode') === 'hard') {
-      setIsHardMode(isHard)
-      localStorage.setItem('gameMode', isHard ? 'hard' : 'normal')
-    } else {
-      showErrorAlert(HARD_MODE_ALERT_MESSAGE)
-    }
-  }
-
-  const handleHighContrastMode = (isHighContrast: boolean) => {
-    setIsHighContrastMode(isHighContrast)
-    setStoredIsHighContrastMode(isHighContrast)
-  }
-
-  useEffect(() => {
-    saveGameStateToLocalStorage({ guesses, solution })
-  }, [guesses])
-
-  useEffect(() => {
-    if (isGameWon) {
-      const winMessage =
-        WIN_MESSAGES[Math.floor(Math.random() * WIN_MESSAGES.length)]
-      const delayMs = REVEAL_TIME_MS * MAX_WORD_LENGTH
-
-      showSuccessAlert(winMessage, {
-        delayMs,
-        onClose: () => setIsStatsModalOpen(true),
-      })
-    }
-
-    if (isGameLost) {
-      setTimeout(() => {
-        setIsStatsModalOpen(true)
-      }, GAME_LOST_INFO_DELAY)
-    }
-  }, [isGameWon, isGameLost, showSuccessAlert])
-
-  const onChar = (value: string) => {
-    if (
-      currentGuess.length < MAX_WORD_LENGTH &&
-      guesses.length < MAX_CHALLENGES &&
-      !isGameWon
-    ) {
-      setCurrentGuess(`${currentGuess}${value}`)
-    }
-  }
-
-  const onDelete = () => {
-    setCurrentGuess(currentGuess.slice(0, -1))
-  }
-
-  const onEnter = () => {
-    if (isGameWon || isGameLost) {
-      return
-    }
-    if (!(currentGuess.length === MAX_WORD_LENGTH)) {
-      showErrorAlert(NOT_ENOUGH_LETTERS_MESSAGE)
-      setCurrentRowClass('jiggle')
-      return setTimeout(() => {
-        setCurrentRowClass('')
-      }, ALERT_TIME_MS)
-    }
-
-    if (!isWordInWordList(currentGuess)) {
-      showErrorAlert(WORD_NOT_FOUND_MESSAGE)
-      setCurrentRowClass('jiggle')
-      return setTimeout(() => {
-        setCurrentRowClass('')
-      }, ALERT_TIME_MS)
-    }
-
-    // enforce hard mode - all guesses must contain all previously revealed letters
-    if (isHardMode) {
-      const firstMissingReveal = findFirstUnusedReveal(currentGuess, guesses)
-      if (firstMissingReveal) {
-        showErrorAlert(firstMissingReveal)
-        setCurrentRowClass('jiggle')
-        return setTimeout(() => {
-          setCurrentRowClass('')
-        }, ALERT_TIME_MS)
-      }
-    }
-
-    setIsRevealing(true)
-    // turn this back off after all
-    // chars have been revealed
-    setTimeout(() => {
-      setIsRevealing(false)
-    }, REVEAL_TIME_MS * MAX_WORD_LENGTH)
-
-    const winningWord = isWinningWord(currentGuess)
-
-    if (
-      currentGuess.length === MAX_WORD_LENGTH &&
-      guesses.length < MAX_CHALLENGES &&
-      !isGameWon
-    ) {
-      setGuesses([...guesses, currentGuess])
-      setCurrentGuess('')
-
-      if (winningWord) {
-        setStats(addStatsForCompletedGame(stats, guesses.length))
-        return setIsGameWon(true)
-      }
-
-      if (guesses.length === MAX_CHALLENGES - 1) {
-        setStats(addStatsForCompletedGame(stats, guesses.length + 1))
-        setIsGameLost(true)
-        showErrorAlert(CORRECT_WORD_MESSAGE(solution), {
-          persist: true,
-          delayMs: REVEAL_TIME_MS * MAX_WORD_LENGTH + 1,
-        })
-      }
-    }
-  }
+  const handleShareSuccess = () => showSuccessAlert(GAME_COPIED_MESSAGE)
+  const handleShareFailure = () => showErrorAlert(SHARE_FAILED_MESSAGE)
 
   return (
-    <div className="min-h-[100dvh] flex flex-col pt-2 pb-8 max-w-7xl mx-auto sm:px-6 lg:px-8 bg-nature-stone-50 dark:bg-nature-stone-900 transition-colors duration-300">
-      <div className="flex w-full max-w-md mx-auto items-center mb-8 mt-6 px-4 sm:px-0">
-        <h1 className="text-3xl sm:text-4xl ml-2.5 grow font-display font-bold tracking-tight dark:text-nature-stone-50 text-nature-stone-900">
+    <div className="mx-auto flex min-h-[100dvh] max-w-7xl flex-col bg-nature-stone-50 pt-[max(0.5rem,env(safe-area-inset-top))] pb-[max(0.5rem,env(safe-area-inset-bottom))] transition-colors duration-300 dark:bg-nature-stone-900 sm:px-6 lg:px-8">
+      <header className="mx-auto mt-3 mb-4 flex w-full max-w-md items-center px-4 sm:px-0">
+        <h1 className="ml-1 grow font-display text-[clamp(1.5rem,6vw,2.25rem)] font-bold tracking-tight text-nature-stone-900 dark:text-nature-stone-50">
           {GAME_TITLE}
         </h1>
-        <InformationCircleIcon
-          className="h-7 w-7 mr-2 cursor-pointer dark:stroke-nature-stone-200 stroke-nature-stone-700 hover:scale-110 transition-transform duration-200"
+        <button
+          type="button"
+          className="mr-1 flex h-11 w-11 items-center justify-center rounded-full text-nature-stone-700 transition hover:bg-nature-stone-200/70 dark:text-nature-stone-200 dark:hover:bg-nature-stone-800"
+          aria-label="Hilfe"
           onClick={() => setIsInfoModalOpen(true)}
-        />
-        <ChartBarIcon
-          className="h-7 w-7 mr-3 cursor-pointer dark:stroke-nature-stone-200 stroke-nature-stone-700 hover:scale-110 transition-transform duration-200"
+        >
+          <InformationCircleIcon className="h-7 w-7" />
+        </button>
+        <button
+          type="button"
+          className="mr-1 flex h-11 w-11 items-center justify-center rounded-full text-nature-stone-700 transition hover:bg-nature-stone-200/70 dark:text-nature-stone-200 dark:hover:bg-nature-stone-800"
+          aria-label="Statistik"
           onClick={() => setIsStatsModalOpen(true)}
-        />
-        <Cog6ToothIcon
-          className="h-7 w-7 mr-3 cursor-pointer dark:stroke-nature-stone-200 stroke-nature-stone-700 hover:scale-110 transition-transform duration-200"
+        >
+          <ChartBarIcon className="h-7 w-7" />
+        </button>
+        <button
+          type="button"
+          className="flex h-11 w-11 items-center justify-center rounded-full text-nature-stone-700 transition hover:bg-nature-stone-200/70 dark:text-nature-stone-200 dark:hover:bg-nature-stone-800"
+          aria-label="Einstellungen"
           onClick={() => setIsSettingsModalOpen(true)}
-        />
-      </div>
-      <div className="flex-1 flex flex-col justify-center items-center px-4">
+        >
+          <Cog6ToothIcon className="h-7 w-7" />
+        </button>
+      </header>
+
+      {updateAvailable && (
+        <button
+          type="button"
+          className="mx-auto mb-2 max-w-md rounded-full bg-nature-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-soft"
+          onClick={() =>
+            window.dispatchEvent(new CustomEvent('pwa-apply-update'))
+          }
+        >
+          {UPDATE_AVAILABLE_MESSAGE}
+        </button>
+      )}
+
+      <div className="flex flex-1 flex-col items-center justify-center px-3">
         <Grid
           guesses={guesses}
           currentGuess={currentGuess}
+          cursorIndex={cursorIndex}
+          onSelectCell={setCursor}
           isRevealing={isRevealing}
           currentRowClassName={currentRowClass}
           isGameWon={isGameWon}
+          solution={solution}
         />
       </div>
-      <div className="px-2 sm:px-4">
+
+      <div className="w-full px-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] sm:px-4">
         <Keyboard
           onChar={onChar}
           onDelete={onDelete}
           onEnter={onEnter}
+          onArrowLeft={() => moveCursor(-1)}
+          onArrowRight={() => moveCursor(1)}
           guesses={guesses}
           isRevealing={isRevealing}
+          solution={solution}
         />
       </div>
+
       <InfoModal
         isOpen={isInfoModalOpen}
         handleClose={() => setIsInfoModalOpen(false)}
@@ -285,8 +155,12 @@ function App() {
         gameStats={stats}
         isGameLost={isGameLost}
         isGameWon={isGameWon}
-        handleShare={() => showSuccessAlert(GAME_COPIED_MESSAGE)}
+        handleShare={handleShareSuccess}
+        handleShareFailure={handleShareFailure}
         isHardMode={isHardMode}
+        tomorrow={tomorrow}
+        solution={solution}
+        solutionIndex={solutionIndex}
       />
       <SettingsModal
         isOpen={isSettingsModalOpen}

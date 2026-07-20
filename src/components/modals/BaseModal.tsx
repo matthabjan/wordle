@@ -1,6 +1,6 @@
 import { Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
-import { XCircleIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 
 type Props = {
   title: string
@@ -14,10 +14,10 @@ export const BaseModal = ({ title, children, isOpen, handleClose }: Props) => {
     <Transition.Root show={isOpen} as={Fragment}>
       <Dialog
         as="div"
-        className="fixed z-10 inset-0 overflow-y-auto"
+        className="fixed inset-0 z-10 overflow-y-auto"
         onClose={handleClose}
       >
-        <div className="flex items-center justify-center min-h-screen py-10 px-4 text-center sm:block sm:p-0">
+        <div className="flex min-h-[100dvh] items-end justify-center px-3 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-center sm:items-center sm:p-0">
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -27,12 +27,11 @@ export const BaseModal = ({ title, children, isOpen, handleClose }: Props) => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Dialog.Overlay className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+            <Dialog.Overlay className="fixed inset-0 bg-nature-stone-900/50 backdrop-blur-sm transition-opacity" />
           </Transition.Child>
 
-          {/* This element is to trick the browser into centering the modal contents. */}
           <span
-            className="hidden sm:inline-block sm:align-middle sm:h-screen"
+            className="hidden sm:inline-block sm:h-[100dvh] sm:align-middle"
             aria-hidden="true"
           >
             &#8203;
@@ -40,30 +39,36 @@ export const BaseModal = ({ title, children, isOpen, handleClose }: Props) => {
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
-            enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            enterFrom="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
             enterTo="opacity-100 translate-y-0 sm:scale-100"
             leave="ease-in duration-200"
             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-            leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            leaveTo="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
           >
-            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6 dark:bg-gray-800">
-              <div className="absolute right-4 top-4">
-                <XCircleIcon
-                  className="h-6 w-6 cursor-pointer dark:stroke-white"
+            <div className="relative inline-block w-full max-w-md transform overflow-hidden rounded-t-3xl border border-nature-stone-200 bg-nature-stone-50 px-5 pt-3 pb-6 text-left align-bottom shadow-soft-lg transition-all sm:my-8 sm:rounded-3xl sm:align-middle sm:p-6 dark:border-nature-stone-700 dark:bg-nature-stone-800">
+              <div
+                className="mx-auto mb-3 h-1 w-10 rounded-full bg-nature-stone-300 sm:hidden dark:bg-nature-stone-600"
+                aria-hidden="true"
+              />
+              <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+                <button
+                  type="button"
+                  className="flex h-10 w-10 items-center justify-center rounded-full text-nature-stone-600 transition hover:bg-nature-stone-200 dark:text-nature-stone-200 dark:hover:bg-nature-stone-700"
+                  aria-label="Schließen"
                   onClick={() => handleClose()}
-                />
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
               </div>
-              <div>
-                <div className="text-center">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100"
-                  >
-                    {title}
-                  </Dialog.Title>
-                  <div className="text-sm text-gray-700 dark:text-gray-300 mt-2">
-                    {children}
-                  </div>
+              <div className="text-center">
+                <Dialog.Title
+                  as="h3"
+                  className="font-display text-lg leading-6 font-semibold text-nature-stone-900 dark:text-nature-stone-50"
+                >
+                  {title}
+                </Dialog.Title>
+                <div className="mt-3 text-sm text-nature-stone-700 dark:text-nature-stone-300">
+                  {children}
                 </div>
               </div>
             </div>

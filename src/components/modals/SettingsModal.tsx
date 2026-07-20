@@ -5,11 +5,11 @@ type Props = {
   isOpen: boolean
   handleClose: () => void
   isHardMode: boolean
-  handleHardMode: Function
+  handleHardMode: (value: boolean) => void
   isDarkMode: boolean
-  handleDarkMode: Function
+  handleDarkMode: (value: boolean) => void
   isHighContrastMode: boolean
-  handleHighContrastMode: Function
+  handleHighContrastMode: (value: boolean) => void
 }
 
 export const SettingsModal = ({
@@ -24,16 +24,13 @@ export const SettingsModal = ({
 }: Props) => {
   return (
     <BaseModal title="Einstellungen" isOpen={isOpen} handleClose={handleClose}>
-      <div className="grid-cols-2 gap-4">
+      <div className="space-y-1">
         <SettingsToggle
           settingName="Schwerer Modus"
           flag={isHardMode}
           handleFlag={handleHardMode}
+          description="Jeder Versuch muss die Hinweise der vorigen Runden berücksichtigen."
         />
-        <p className="text-sm text-left">
-          Im schweren Modus muss jeder Versuch die Hinweise der vorigen Runden
-          berücksichtigen.
-        </p>
         <SettingsToggle
           settingName="Nachtmodus"
           flag={isDarkMode}
@@ -43,6 +40,7 @@ export const SettingsModal = ({
           settingName="Hoher Kontrast"
           flag={isHighContrastMode}
           handleFlag={handleHighContrastMode}
+          description="Farben für bessere Erkennbarkeit (farbenblindfreundlich)."
         />
       </div>
     </BaseModal>

@@ -54,11 +54,11 @@ cp .env.docker.example .env.docker
 Edit `.env.docker` to configure your deployment:
 
 ```bash
-# Change the port if needed
 WORDLE_PORT=8080
-
-# Optional: Set a custom project name
-COMPOSE_PROJECT_NAME=wordle
+VITE_GAME_NAME=Wordle 2.1
+VITE_GAME_DESCRIPTION=Wordle auf Deutsch
+# For Traefik:
+# WORDLE_HOST=wordle.yourdomain.com
 ```
 
 #### 2. Build the Production Image
@@ -145,98 +145,74 @@ To change application settings (title, description, etc.):
 
 ## SSL/TLS Setup
 
-### Option 1: Using Nginx Reverse Proxy (Recommended)
+### Option 1: Traefik (Recommended for home servers)
 
-The docker-compose file includes an optional nginx reverse proxy for SSL termination.
+Use the Traefik overlay so the Wordle container has **no published host ports**. Traefik terminates TLS and sets HSTS; the app nginx still sends CSP and other security headers.
 
-#### 1. Prepare SSL Certificates
+**Prerequisites**
 
-Create a `certs` directory and add your certificates:
+- Traefik on Docker, attached to an external network named `proxy`
+- Entrypoints `web` (80) and `websecure` (443)
+- Cert resolver named `letsencrypt` (adjust the label in `docker-compose.traefik.yml` if yours differs)
+
+**Deploy**
+
+```bash
+cp .env.docker.example .env.docker
+# Set WORDLE_HOST=wordle.yourdomain.com and VITE_* as needed
+
+docker network create proxy   # once, if Traefik already uses another name, edit the overlay
+
+docker compose --env-file .env.docker \
+  -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d --build
+```
+
+Or: `make up-traefik`
+
+**Firewall checklist**
+
+- [ ] Only ports 80/443 open to the internet (on Traefik)
+- [ ] Wordle port 8080 is **not** published on the host
+- [ ] Traefik sets `Strict-Transport-Security` (do not duplicate HSTS on the app)
+- [ ] Browser DevTools → Network: fonts load from same origin (`/fonts/*.woff2`), no `fonts.googleapis.com`
+- [ ] Response headers include `Content-Security-Policy`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`
+
+**Verify headers from the app container**
+
+```bash
+docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml exec wordle \
+  wget -q -S -O /dev/null http://localhost:8080/ 2>&1 | head -30
+```
+
+### Option 2: Built-in nginx SSL proxy (legacy)
+
+The optional `nginx-proxy` service in `docker-compose.prod.yml` / `docker/etc/nginx/conf.d/wordle.conf` can terminate TLS if you are not using Traefik. Prefer Option 1 for home-lab setups.
+
+#### Prepare certificates
 
 ```bash
 mkdir -p certs
-# Copy your SSL certificates
 cp /path/to/fullchain.pem certs/
 cp /path/to/privkey.pem certs/
 ```
 
-#### 2. Enable Nginx Proxy
-
-Edit `docker-compose.prod.yml` and uncomment the `nginx-proxy` service section and the `volumes` section at the bottom.
-
-#### 3. Configure Domain
-
-Edit `docker/etc/nginx/conf.d/wordle.conf` and replace `server_name _;` with your domain:
-
-```nginx
-server_name wordle.yourdomain.com;
-```
-
-#### 4. Start with SSL
+Uncomment `nginx-proxy` in compose, set `server_name` in `wordle.conf`, then:
 
 ```bash
-docker-compose --env-file .env.docker -f docker-compose.prod.yml up -d
+docker compose --env-file .env.docker -f docker-compose.prod.yml up -d
 ```
 
-Your application will now be available at:
-- HTTP: http://yourdomain.com (redirects to HTTPS)
-- HTTPS: https://yourdomain.com
+### Option 3: Other reverse proxies (Caddy, etc.)
 
-### Option 2: Using Let's Encrypt
-
-For automated SSL certificate management:
-
-1. **Install Certbot**:
-
-```bash
-# On the host machine
-sudo apt-get update
-sudo apt-get install certbot
-```
-
-2. **Generate Certificates**:
-
-```bash
-sudo certbot certonly --standalone -d yourdomain.com -d www.yourdomain.com
-```
-
-3. **Copy Certificates**:
-
-```bash
-mkdir -p certs
-sudo cp /etc/letsencrypt/live/yourdomain.com/fullchain.pem certs/
-sudo cp /etc/letsencrypt/live/yourdomain.com/privkey.pem certs/
-sudo chown -R $USER:$USER certs/
-```
-
-4. **Set Up Auto-Renewal**:
-
-Create a renewal script `scripts/renew-certs.sh`:
-
-```bash
-#!/bin/bash
-sudo certbot renew --quiet
-sudo cp /etc/letsencrypt/live/yourdomain.com/fullchain.pem /path/to/project/certs/
-sudo cp /etc/letsencrypt/live/yourdomain.com/privkey.pem /path/to/project/certs/
-docker-compose -f /path/to/project/docker-compose.prod.yml restart nginx-proxy
-```
-
-Add to crontab:
-```bash
-0 0 * * 0 /path/to/scripts/renew-certs.sh
-```
-
-### Option 3: External Reverse Proxy
-
-If you already have a reverse proxy (Traefik, Caddy, etc.), simply proxy traffic to the Wordle container on port 8080.
-
-Example Caddy configuration:
+Proxy to the Wordle container on port **8080** on the Docker network (do not publish 8080 publicly). Example Caddy:
 
 ```
 wordle.yourdomain.com {
-    reverse_proxy localhost:8080
+    reverse_proxy wordle:8080
 }
 ```
+
+Let Caddy/Traefik set HSTS; the app image already sends CSP and related headers.
 
 ## Monitoring and Logs
 
@@ -419,55 +395,41 @@ docker-compose -f docker-compose.prod.yml up -d --no-deps --scale wordle=1 wordl
 
 ## Performance Optimization
 
-### Enable HTTP/2
+### Gzip Compression
 
-Already enabled in the nginx proxy configuration.
-
-### Enable Gzip Compression
-
-Already enabled in `docker/etc/nginx/nginx.conf`.
+Enabled in `docker/etc/nginx/nginx.conf` for text, JS, CSS, JSON, SVG, and fonts.
 
 ### Cache Static Assets
 
-Static assets are cached for 1 year in the nginx proxy configuration.
+Configured in `docker/etc/nginx/conf.d/default.conf`:
+
+- `/assets/` and `/fonts/`: `Cache-Control: public, max-age=31536000, immutable`
+- `index.html`, `sw.js`, manifests: `Cache-Control: no-cache` (so PWA updates are not sticky)
 
 ### Optimize Image Size
 
-The production image uses:
-- Multi-stage builds
-- Alpine Linux (minimal size)
-- Only production dependencies
-
-Current image size: ~50MB
+The production image uses multi-stage builds and Alpine Linux. Build args bake `VITE_*` into the static bundle (`npm ci`).
 
 ## Security Best Practices
 
-1. **Run as non-root user**: Already configured in Dockerfile
-2. **Use security headers**: Configured in nginx proxy
-3. **Keep images updated**:
-   ```bash
-   docker-compose -f docker-compose.prod.yml pull
-   docker-compose -f docker-compose.prod.yml up -d
-   ```
-4. **Scan for vulnerabilities**:
-   ```bash
-   docker scan wordle:prod
-   ```
-5. **Use secrets for sensitive data**: Use Docker secrets or environment files
-6. **Enable firewall**: Only expose necessary ports
+1. **Non-root nginx user** (`wordle`, UID 1001) in the final image
+2. **Security headers** on the app nginx (`default.conf`): CSP, nosniff, frame deny, referrer, permissions-policy, COOP — HSTS belongs on Traefik
+3. **Self-hosted fonts** — no Google Fonts egress
+4. **Traefik overlay**: no host ports, `cap_drop: ALL`, `no-new-privileges`, `read_only` + tmpfs
+5. **Firewall**: only 80/443 to Traefik; never expose 8080 publicly
+6. **Keep images updated** and scan (`docker scout` / Trivy)
+7. **No secrets in the SPA** — `VITE_*` are public build-time strings only
 
 ## Production Checklist
 
-- [ ] Environment variables configured
-- [ ] SSL certificates installed (if using HTTPS)
-- [ ] Firewall configured
-- [ ] Resource limits set appropriately
-- [ ] Health checks verified
-- [ ] Logs rotation configured
-- [ ] Backup strategy in place
-- [ ] Monitoring set up
-- [ ] Update procedure documented
-- [ ] Emergency rollback plan ready
+- [ ] `.env.docker` configured (`WORDLE_HOST`, `VITE_*`)
+- [ ] Traefik network `proxy` exists; cert resolver name matches labels
+- [ ] Firewall: 80/443 only; 8080 not published
+- [ ] Health check green (`make health` or compose health)
+- [ ] CSP / nosniff / frame headers verified
+- [ ] Fonts served from `/fonts/` (same origin)
+- [ ] Log rotation configured
+- [ ] Backup / rollback plan ready
 
 ## Support
 

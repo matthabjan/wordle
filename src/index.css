@@ -1,20 +1,181 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap');
+/* Self-hosted fonts (no Google Fonts egress — CSP font-src 'self') */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/inter-latin-400-normal.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('/fonts/inter-latin-500-normal.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('/fonts/inter-latin-600-normal.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/inter-latin-700-normal.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 800;
+  src: url('/fonts/inter-latin-800-normal.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('/fonts/montserrat-latin-600-normal.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/montserrat-latin-700-normal.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 800;
+  src: url('/fonts/montserrat-latin-800-normal.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-nature-stone-50: #fafaf9;
+  --color-nature-stone-100: #f5f5f4;
+  --color-nature-stone-200: #e7e5e4;
+  --color-nature-stone-300: #d6d3d1;
+  --color-nature-stone-400: #a8a29e;
+  --color-nature-stone-500: #78716c;
+  --color-nature-stone-600: #57534e;
+  --color-nature-stone-700: #44403c;
+  --color-nature-stone-800: #292524;
+  --color-nature-stone-900: #1c1917;
+
+  --color-nature-emerald-50: #ecfdf5;
+  --color-nature-emerald-100: #d1fae5;
+  --color-nature-emerald-200: #a7f3d0;
+  --color-nature-emerald-300: #6ee7b7;
+  --color-nature-emerald-400: #34d399;
+  --color-nature-emerald-500: #10b981;
+  --color-nature-emerald-600: #059669;
+  --color-nature-emerald-700: #047857;
+  --color-nature-emerald-800: #065f46;
+  --color-nature-emerald-900: #064e3b;
+
+  --color-nature-amber-50: #fffbeb;
+  --color-nature-amber-100: #fef3c7;
+  --color-nature-amber-200: #fde68a;
+  --color-nature-amber-300: #fcd34d;
+  --color-nature-amber-400: #fbbf24;
+  --color-nature-amber-500: #f59e0b;
+  --color-nature-amber-600: #d97706;
+  --color-nature-amber-700: #b45309;
+  --color-nature-amber-800: #92400e;
+  --color-nature-amber-900: #78350f;
+
+  --font-sans: Inter, system-ui, -apple-system, sans-serif;
+  --font-display: Montserrat, Inter, system-ui, sans-serif;
+
+  --shadow-inner-soft: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-soft-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+  --animate-pop: pop 0.15s ease-out;
+  --animate-shake: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  --animate-flip: flip 0.5s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+}
 
 @layer base {
   * {
     @apply antialiased;
+  }
+
+  html {
+    background-color: #fafaf9;
+    overscroll-behavior: none;
+  }
+
+  html.dark {
+    background-color: #1c1917;
+  }
+
+  body {
+    min-height: 100dvh;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
+
+  #root {
+    min-height: 100dvh;
   }
 }
 
 :root {
   --animation-speed: 1000ms;
   --animation-speed-fast: 250ms;
+  --tile-size: clamp(2.75rem, 14vw, 3.5rem);
+  --key-height: clamp(2.75rem, 8dvh, 3.625rem);
 
-  /* Nature Distilled Color Variables */
   --default-cell-bg-color: #fafaf9;
   --default-cell-border-color: #d6d3d1;
   --default-cell-text-color: #1c1917;
@@ -22,7 +183,6 @@
   --correct-cell-bg-color: #10b981;
   --present-cell-bg-color: #f59e0b;
 
-  /* Soft UI Variables */
   --cell-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
   --cell-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.1);
   --inner-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
@@ -76,12 +236,8 @@
   animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 }
 
-.heartbeat {
-  animation: heartbeat 0.3s ease-in-out;
-}
-
-.cascade-win {
-  animation: cascadeWin 0.6s ease-out;
+.cursor-pulse {
+  animation: cursorPulse 1.2s ease-in-out infinite;
 }
 
 @keyframes revealAbsentCharCell {
@@ -147,7 +303,6 @@
   }
 }
 
-/* Additional animation on the child div to avoid letters turning upside down/snapping back to upright visual glitch */
 @keyframes offsetLetterFlip {
   0% {
     transform: rotateX(0deg);
@@ -189,28 +344,13 @@
   }
 }
 
-@keyframes heartbeat {
+@keyframes cursorPulse {
   0%,
   100% {
-    transform: scale(1);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.45);
   }
   50% {
-    transform: scale(1.08);
-  }
-}
-
-@keyframes cascadeWin {
-  0% {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.05) translateY(-4px);
-    opacity: 0.9;
-  }
-  100% {
-    transform: scale(1) translateY(0);
-    opacity: 1;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.85);
   }
 }
 
@@ -218,12 +358,37 @@
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* Tactile soft-UI effect for cells */
 .cell-tactile {
   box-shadow: var(--cell-shadow), var(--inner-shadow);
   transition: all 0.2s ease;
 }
 
-.cell-tactile:hover {
-  box-shadow: var(--cell-shadow-hover);
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell-fill-animation,
+  .cell-reveal,
+  .cell-reveal > .letter-container,
+  .jiggle,
+  .cursor-pulse {
+    animation: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

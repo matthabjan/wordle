@@ -11,9 +11,12 @@ coverage
 
 # Production build
 build
+dist
 
-# Misc
+# Env files — pass VITE_* via compose build.args instead
 .DS_Store
+.env
+.env.docker
 .env.local
 .env.development.local
 .env.test.local
@@ -39,10 +42,9 @@ yarn-error.log*
 *.md
 !README.md
 
-# Docker files
+# Docker files (copied explicitly where needed)
 docker-compose*.yml
 .dockerignore
-Dockerfile
 
 # CI/CD
 .husky

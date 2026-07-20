@@ -5,19 +5,37 @@ import {
   saveStatsToLocalStorage,
 } from './localStorage'
 
-// In stats array elements 0-5 are successes in 1-6 trys
+const defaultStats: GameStats = {
+  winDistribution: Array.from(new Array(MAX_CHALLENGES), () => 0),
+  gamesFailed: 0,
+  currentStreak: 0,
+  bestStreak: 0,
+  totalGames: 0,
+  successRate: 0,
+}
 
 export const addStatsForCompletedGame = (
   gameStats: GameStats,
   count: number,
+  solutionIndex: number,
 ) => {
   // Count is number of incorrect guesses before end.
-  const stats = { ...gameStats }
+  const stats: GameStats = {
+    ...gameStats,
+    winDistribution: [...gameStats.winDistribution],
+  }
+
+  // Reset streak if a calendar day was skipped (solutionIndex jumped by > 1)
+  if (
+    typeof stats.lastPlayedSolutionIndex === 'number' &&
+    solutionIndex > stats.lastPlayedSolutionIndex + 1
+  ) {
+    stats.currentStreak = 0
+  }
 
   stats.totalGames += 1
 
   if (count >= MAX_CHALLENGES) {
-    // A fail situation
     stats.currentStreak = 0
     stats.gamesFailed += 1
   } else {
@@ -29,23 +47,20 @@ export const addStatsForCompletedGame = (
     }
   }
 
+  stats.lastPlayedSolutionIndex = solutionIndex
   stats.successRate = getSuccessRate(stats)
 
   saveStatsToLocalStorage(stats)
   return stats
 }
 
-const defaultStats: GameStats = {
-  winDistribution: Array.from(new Array(MAX_CHALLENGES), () => 0),
-  gamesFailed: 0,
-  currentStreak: 0,
-  bestStreak: 0,
-  totalGames: 0,
-  successRate: 0,
-}
-
 export const loadStats = () => {
-  return loadStatsFromLocalStorage() || defaultStats
+  return (
+    loadStatsFromLocalStorage() || {
+      ...defaultStats,
+      winDistribution: [...defaultStats.winDistribution],
+    }
+  )
 }
 
 const getSuccessRate = (gameStats: GameStats) => {

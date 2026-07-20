@@ -1,32 +1,49 @@
 import { ReactNode } from 'react'
 import classnames from 'classnames'
-import { CharStatus } from '../../lib/statuses'
+import { motion, useReducedMotion } from 'framer-motion'
 import { MAX_WORD_LENGTH, REVEAL_TIME_MS } from '../../constants/settings'
+import {
+  STATUS_ABSENT,
+  STATUS_CORRECT,
+  STATUS_PRESENT,
+} from '../../constants/strings'
 import { getStoredIsHighContrastMode } from '../../lib/localStorage'
-import { motion } from 'framer-motion'
+import { CharStatus } from '../../lib/statuses'
 
 type Props = {
   children?: ReactNode
   value: string
-  width?: number
+  wide?: boolean
   status?: CharStatus
   onClick: (value: string) => void
   isRevealing?: boolean
+  ariaLabel?: string
 }
 
 export const Key = ({
   children,
   status,
-  width = 40,
+  wide = false,
   value,
   onClick,
   isRevealing,
+  ariaLabel,
 }: Props) => {
   const keyDelayMs = REVEAL_TIME_MS * MAX_WORD_LENGTH
   const isHighContrast = getStoredIsHighContrastMode()
+  const reduceMotion = useReducedMotion()
+
+  const statusHint =
+    status === 'correct'
+      ? STATUS_CORRECT
+      : status === 'present'
+        ? STATUS_PRESENT
+        : status === 'absent'
+          ? STATUS_ABSENT
+          : undefined
 
   const classes = classnames(
-    'flex items-center justify-center rounded-lg mx-0.5 text-xs font-semibold cursor-pointer select-none dark:text-white shadow-soft transition-all duration-300',
+    'flex items-center justify-center rounded-xl mx-0.5 text-xs font-semibold cursor-pointer select-none dark:text-white shadow-soft transition-all duration-300 touch-manipulation min-h-[48px]',
     {
       'bg-nature-stone-200 dark:bg-nature-stone-600 hover:bg-nature-stone-300 dark:hover:bg-nature-stone-500 active:scale-95':
         !status,
@@ -40,13 +57,14 @@ export const Key = ({
         status === 'correct' && !isHighContrast,
       'bg-nature-amber-500 dark:bg-nature-amber-600 hover:bg-nature-amber-600 dark:hover:bg-nature-amber-500 text-white':
         status === 'present' && !isHighContrast,
+      'flex-[1.5]': wide,
+      'flex-1': !wide,
     },
   )
 
   const styles = {
     transitionDelay: isRevealing ? `${keyDelayMs}ms` : 'unset',
-    width: `${width}px`,
-    height: '58px',
+    height: 'var(--key-height)',
   }
 
   const handleClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {
@@ -56,11 +74,12 @@ export const Key = ({
 
   return (
     <motion.button
+      type="button"
       style={styles}
       className={classes}
       onClick={handleClick}
-      whileTap={{ scale: 0.95 }}
-      whileHover={{ scale: 1.02, y: -2 }}
+      aria-label={ariaLabel || (statusHint ? `${value}, ${statusHint}` : value)}
+      whileTap={reduceMotion ? undefined : { scale: 0.95 }}
       transition={{ duration: 0.15 }}
     >
       <span className="font-display">{children || value}</span>

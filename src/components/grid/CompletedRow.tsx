@@ -1,37 +1,41 @@
+import { motion, useReducedMotion } from 'framer-motion'
 import { getGuessStatuses } from '../../lib/statuses'
 import { Cell } from './Cell'
-import { motion } from 'framer-motion'
 
 type Props = {
   guess: string
+  solution: string
   isRevealing?: boolean
+  rowIndex: number
 }
 
-export const CompletedRow = ({ guess, isRevealing }: Props) => {
-  const statuses = getGuessStatuses(guess)
+export const CompletedRow = ({
+  guess,
+  solution,
+  isRevealing,
+  rowIndex,
+}: Props) => {
+  const statuses = getGuessStatuses(guess, solution)
+  const reduceMotion = useReducedMotion()
 
   return (
     <motion.div
-      className="flex justify-center mb-1"
-      initial={{ opacity: 0 }}
+      className="mb-1 flex justify-center"
+      role="group"
+      aria-label={`Versuch ${rowIndex + 1}: ${guess}`}
+      initial={reduceMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
       {guess.split('').map((letter, i) => (
-        <motion.div
+        <Cell
           key={i}
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2, delay: i * 0.05 }}
-        >
-          <Cell
-            value={letter}
-            status={statuses[i]}
-            position={i}
-            isRevealing={isRevealing}
-            isCompleted
-          />
-        </motion.div>
+          value={letter}
+          status={statuses[i]}
+          position={i}
+          isRevealing={isRevealing}
+          isCompleted
+        />
       ))}
     </motion.div>
   )

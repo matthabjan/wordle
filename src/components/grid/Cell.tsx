@@ -1,15 +1,24 @@
-import { CharStatus } from '../../lib/statuses'
 import classnames from 'classnames'
+import { motion, useReducedMotion } from 'framer-motion'
 import { REVEAL_TIME_MS } from '../../constants/settings'
+import {
+  STATUS_ABSENT,
+  STATUS_CORRECT,
+  STATUS_PRESENT,
+} from '../../constants/strings'
 import { getStoredIsHighContrastMode } from '../../lib/localStorage'
-import { motion } from 'framer-motion'
+import { CharStatus } from '../../lib/statuses'
 
 type Props = {
-  value?: string
+  value?: string | null
   status?: CharStatus
   isRevealing?: boolean
   isCompleted?: boolean
   position?: number
+  isCursor?: boolean
+  onClick?: () => void
+  interactive?: boolean
+  ariaLabel?: string
 }
 
 export const Cell = ({
@@ -18,14 +27,19 @@ export const Cell = ({
   isRevealing,
   isCompleted,
   position = 0,
+  isCursor = false,
+  onClick,
+  interactive = false,
+  ariaLabel,
 }: Props) => {
-  const isFilled = value && !isCompleted
+  const isFilled = Boolean(value) && !isCompleted
   const shouldReveal = isRevealing && isCompleted
   const animationDelay = `${position * REVEAL_TIME_MS}ms`
   const isHighContrast = getStoredIsHighContrastMode()
+  const reduceMotion = useReducedMotion()
 
   const classes = classnames(
-    'w-14 h-14 border-solid border-2 flex items-center justify-center mx-0.5 text-4xl font-bold rounded-lg dark:text-white transition-all duration-200',
+    'border-solid border-2 flex items-center justify-center mx-0.5 text-[clamp(1.5rem,7vw,2.25rem)] font-bold rounded-xl dark:text-white transition-all duration-200 touch-manipulation',
     {
       'bg-nature-stone-50 dark:bg-nature-stone-800 border-nature-stone-300 dark:border-nature-stone-600 cell-tactile':
         !status,
@@ -40,21 +54,70 @@ export const Cell = ({
         status === 'correct' && !isHighContrast,
       'present shadowed bg-nature-amber-500 dark:bg-nature-amber-600 text-white border-nature-amber-500 dark:border-nature-amber-600':
         status === 'present' && !isHighContrast,
-      'cell-fill-animation': isFilled,
-      'cell-reveal': shouldReveal,
+      'cell-fill-animation': isFilled && !reduceMotion,
+      'cell-reveal': shouldReveal && !reduceMotion,
+      'ring-2 ring-nature-emerald-500 cursor-pulse': isCursor && !status,
     },
   )
+
+  const statusLabel =
+    status === 'correct'
+      ? STATUS_CORRECT
+      : status === 'present'
+        ? STATUS_PRESENT
+        : status === 'absent'
+          ? STATUS_ABSENT
+          : null
+
+  const content = (
+    <>
+      <div className="letter-container font-display" style={{ animationDelay }}>
+        {value}
+      </div>
+      {value && statusLabel && (
+        <span className="sr-only">
+          {value} — {statusLabel}
+        </span>
+      )}
+    </>
+  )
+
+  const style = {
+    animationDelay,
+    width: 'var(--tile-size)',
+    height: 'var(--tile-size)',
+  }
+
+  if (interactive) {
+    return (
+      <motion.button
+        type="button"
+        className={classes}
+        style={style}
+        onClick={onClick}
+        aria-label={ariaLabel}
+        aria-pressed={isCursor}
+        animate={
+          isFilled && !reduceMotion ? { scale: [1, 1.1, 1] } : { scale: 1 }
+        }
+        transition={{ duration: 0.15 }}
+      >
+        {content}
+      </motion.button>
+    )
+  }
 
   return (
     <motion.div
       className={classes}
-      style={{ animationDelay }}
-      animate={isFilled ? { scale: [1, 1.1, 1] } : { scale: 1 }}
+      style={style}
+      animate={
+        isFilled && !reduceMotion ? { scale: [1, 1.1, 1] } : { scale: 1 }
+      }
       transition={{ duration: 0.15 }}
+      aria-label={ariaLabel}
     >
-      <div className="letter-container font-display" style={{ animationDelay }}>
-        {value}
-      </div>
+      {content}
     </motion.div>
   )
 }

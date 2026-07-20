@@ -1,8 +1,7 @@
 #!/bin/sh
 
-# Strict shell settings.
-set -e pipefall;
-set -u pipefall;
+# Strict shell settings (Alpine ash: no pipefail).
+set -eu
 
 UID=1001
 GID=1001
@@ -10,9 +9,9 @@ USER=wordle
 GROUP=wordle
 
 # Enable print for all executed commands
-trace_on() { set -x;}
+trace_on() { set -x; }
 # Disable print for all executed commands
-trace_off() { set +x;}
+trace_off() { set +x; }
 
 add_custom_user_group() {
     addgroup -g $GID -S $GROUP
