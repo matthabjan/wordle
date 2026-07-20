@@ -1,4 +1,5 @@
 # Traefik overlay for home-server deployment.
+# Requires Docker Compose v2.24+ (for ports: !reset).
 #
 # Prerequisites:
 #   - Traefik running and attached to an external Docker network named "proxy"
