@@ -7,7 +7,6 @@ import {
   STATUS_CORRECT,
   STATUS_PRESENT,
 } from '../../constants/strings'
-import { getStoredIsHighContrastMode } from '../../lib/localStorage'
 import { CharStatus } from '../../lib/statuses'
 
 type Props = {
@@ -30,7 +29,6 @@ export const Key = ({
   ariaLabel,
 }: Props) => {
   const keyDelayMs = REVEAL_TIME_MS * MAX_WORD_LENGTH
-  const isHighContrast = getStoredIsHighContrastMode()
   const reduceMotion = useReducedMotion()
 
   const statusHint =
@@ -43,22 +41,15 @@ export const Key = ({
           : undefined
 
   const classes = classnames(
-    'flex items-center justify-center rounded-xl mx-0.5 text-xs font-semibold cursor-pointer select-none dark:text-white shadow-soft transition-all duration-300 touch-manipulation min-h-[48px]',
+    'flex items-center justify-center rounded-xl mx-0.5 font-semibold cursor-pointer select-none shadow-soft transition-all duration-300 touch-manipulation min-h-[48px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-nature-stone-900',
     {
-      'bg-nature-stone-200 dark:bg-nature-stone-600 hover:bg-nature-stone-300 dark:hover:bg-nature-stone-500 active:scale-95':
+      'bg-nature-stone-200 dark:bg-nature-stone-600 dark:text-white hover:bg-nature-stone-300 dark:hover:bg-nature-stone-500 active:scale-95':
         !status,
-      'bg-nature-stone-500 dark:bg-nature-stone-800 text-white':
-        status === 'absent',
-      'bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white':
-        status === 'correct' && isHighContrast,
-      'bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 text-white':
-        status === 'present' && isHighContrast,
-      'bg-nature-emerald-600 dark:bg-nature-emerald-700 hover:bg-nature-emerald-700 dark:hover:bg-nature-emerald-600 text-white':
-        status === 'correct' && !isHighContrast,
-      'bg-nature-amber-500 dark:bg-nature-amber-600 hover:bg-nature-amber-600 dark:hover:bg-nature-amber-500 text-white':
-        status === 'present' && !isHighContrast,
-      'flex-[1.5]': wide,
-      'flex-1': !wide,
+      'key-status-absent': status === 'absent',
+      'key-status-correct': status === 'correct',
+      'key-status-present': status === 'present',
+      'flex-[1.5] px-0.5 text-[0.65rem] leading-tight sm:text-xs': wide,
+      'flex-1 text-xs': !wide,
     },
   )
 

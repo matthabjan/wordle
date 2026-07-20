@@ -63,11 +63,7 @@ export const Keyboard = ({
   }, [onEnter, onDelete, onChar, onArrowLeft, onArrowRight, isRevealing])
 
   return (
-    <div
-      className="mx-auto w-full max-w-lg pb-2"
-      role="group"
-      aria-label="Tastatur"
-    >
+    <div className="w-full pb-2" role="group" aria-label="Tastatur">
       <div className="mb-1.5 flex w-full">
         {['Q', 'W', 'E', 'R', 'T', 'Z', 'U', 'I', 'O', 'P'].map((key) => (
           <Key

@@ -7,6 +7,7 @@ type Props = {
   solution: string
   isRevealing?: boolean
   rowIndex: number
+  celebrate?: boolean
 }
 
 export const CompletedRow = ({
@@ -14,6 +15,7 @@ export const CompletedRow = ({
   solution,
   isRevealing,
   rowIndex,
+  celebrate = false,
 }: Props) => {
   const statuses = getGuessStatuses(guess, solution)
   const reduceMotion = useReducedMotion()
@@ -21,11 +23,18 @@ export const CompletedRow = ({
   return (
     <motion.div
       className="mb-1 flex justify-center"
-      role="group"
+      role="row"
       aria-label={`Versuch ${rowIndex + 1}: ${guess}`}
       initial={reduceMotion ? false : { opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
+      animate={
+        celebrate && !reduceMotion
+          ? { opacity: 1, scale: [1, 1.05, 1], y: [0, -4, 0] }
+          : { opacity: 1, scale: 1, y: 0 }
+      }
+      transition={{
+        duration: celebrate && !reduceMotion ? 0.6 : 0.3,
+        delay: celebrate && !reduceMotion ? rowIndex * 0.1 : 0,
+      }}
     >
       {guess.split('').map((letter, i) => (
         <Cell

@@ -1,12 +1,11 @@
 import classnames from 'classnames'
-import { motion, useReducedMotion } from 'framer-motion'
+import { useReducedMotion } from 'framer-motion'
 import { REVEAL_TIME_MS } from '../../constants/settings'
 import {
   STATUS_ABSENT,
   STATUS_CORRECT,
   STATUS_PRESENT,
 } from '../../constants/strings'
-import { getStoredIsHighContrastMode } from '../../lib/localStorage'
 import { CharStatus } from '../../lib/statuses'
 
 type Props = {
@@ -19,6 +18,8 @@ type Props = {
   onClick?: () => void
   interactive?: boolean
   ariaLabel?: string
+  /** Smaller static tiles for help examples */
+  compact?: boolean
 }
 
 export const Cell = ({
@@ -31,32 +32,26 @@ export const Cell = ({
   onClick,
   interactive = false,
   ariaLabel,
+  compact = false,
 }: Props) => {
   const isFilled = Boolean(value) && !isCompleted
   const shouldReveal = isRevealing && isCompleted
   const animationDelay = `${position * REVEAL_TIME_MS}ms`
-  const isHighContrast = getStoredIsHighContrastMode()
   const reduceMotion = useReducedMotion()
 
   const classes = classnames(
-    'border-solid border-2 flex items-center justify-center mx-0.5 text-[clamp(1.5rem,7vw,2.25rem)] font-bold rounded-xl dark:text-white transition-all duration-200 touch-manipulation',
+    'border-solid border-2 flex items-center justify-center mx-0.5 font-bold rounded-xl dark:text-white transition-all duration-200 touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-nature-stone-900',
+    compact ? 'text-base h-9 w-9' : 'text-[clamp(1.5rem,7vw,2.25rem)]',
     {
       'bg-nature-stone-50 dark:bg-nature-stone-800 border-nature-stone-300 dark:border-nature-stone-600 cell-tactile':
         !status,
       'border-nature-stone-500 dark:border-nature-stone-400': value && !status,
-      'absent shadowed bg-nature-stone-500 dark:bg-nature-stone-700 text-white border-nature-stone-500 dark:border-nature-stone-700':
-        status === 'absent',
-      'correct shadowed bg-orange-500 text-white border-orange-500':
-        status === 'correct' && isHighContrast,
-      'present shadowed bg-cyan-500 text-white border-cyan-500':
-        status === 'present' && isHighContrast,
-      'correct shadowed bg-nature-emerald-600 dark:bg-nature-emerald-700 text-white border-nature-emerald-600 dark:border-nature-emerald-700':
-        status === 'correct' && !isHighContrast,
-      'present shadowed bg-nature-amber-500 dark:bg-nature-amber-600 text-white border-nature-amber-500 dark:border-nature-amber-600':
-        status === 'present' && !isHighContrast,
-      'cell-fill-animation': isFilled && !reduceMotion,
+      'absent shadowed cell-status-absent': status === 'absent',
+      'correct shadowed cell-status-correct': status === 'correct',
+      'present shadowed cell-status-present': status === 'present',
+      'cell-fill-animation': isFilled && !reduceMotion && !compact,
       'cell-reveal': shouldReveal && !reduceMotion,
-      'ring-2 ring-nature-emerald-500 cursor-pulse': isCursor && !status,
+      'ring-2 cell-cursor cursor-pulse': isCursor && !status,
     },
   )
 
@@ -82,42 +77,38 @@ export const Cell = ({
     </>
   )
 
-  const style = {
-    animationDelay,
-    width: 'var(--tile-size)',
-    height: 'var(--tile-size)',
-  }
+  const style = compact
+    ? { animationDelay }
+    : {
+        animationDelay,
+        width: 'var(--tile-size)',
+        height: 'var(--tile-size)',
+      }
 
   if (interactive) {
     return (
-      <motion.button
+      <button
         type="button"
+        role="gridcell"
         className={classes}
         style={style}
         onClick={onClick}
         aria-label={ariaLabel}
         aria-pressed={isCursor}
-        animate={
-          isFilled && !reduceMotion ? { scale: [1, 1.1, 1] } : { scale: 1 }
-        }
-        transition={{ duration: 0.15 }}
       >
         {content}
-      </motion.button>
+      </button>
     )
   }
 
   return (
-    <motion.div
+    <div
+      role={compact ? undefined : 'gridcell'}
       className={classes}
       style={style}
-      animate={
-        isFilled && !reduceMotion ? { scale: [1, 1.1, 1] } : { scale: 1 }
-      }
-      transition={{ duration: 0.15 }}
       aria-label={ariaLabel}
     >
       {content}
-    </motion.div>
+    </div>
   )
 }

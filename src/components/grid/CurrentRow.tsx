@@ -18,7 +18,7 @@ export const CurrentRow = ({
   const classes = `flex justify-center mb-1 ${className}`
 
   return (
-    <div className={classes} role="group" aria-label="Aktuelle Zeile">
+    <div className={classes} role="row" aria-label="Aktuelle Zeile">
       {Array.from({ length: MAX_WORD_LENGTH }).map((_, i) => (
         <Cell
           key={i}

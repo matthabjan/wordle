@@ -55,7 +55,7 @@ Edit `.env.docker` to configure your deployment:
 
 ```bash
 WORDLE_PORT=8080
-VITE_GAME_NAME=Wordle 2.1
+VITE_GAME_NAME=Wordle
 VITE_GAME_DESCRIPTION=Wordle auf Deutsch
 ```
 
@@ -151,7 +151,7 @@ Build the `wordle:prod` image, then run it from your own Portainer/Traefik stack
 
 ```bash
 docker build --target prod -t wordle:prod \
-  --build-arg VITE_GAME_NAME="Wordle 2.1" \
+  --build-arg VITE_GAME_NAME="Wordle" \
   --build-arg VITE_GAME_DESCRIPTION="Wordle auf Deutsch" \
   .
 ```

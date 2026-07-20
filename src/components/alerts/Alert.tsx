@@ -10,10 +10,10 @@ type Props = {
 
 export const Alert = ({ isOpen, message, variant = 'error' }: Props) => {
   const classes = classNames(
-    'fixed z-20 top-[max(1.25rem,env(safe-area-inset-top))] left-1/2 transform -translate-x-1/2 max-w-sm w-[calc(100%-2rem)] shadow-soft-lg rounded-2xl pointer-events-auto overflow-hidden',
+    'fixed z-20 top-[max(1.25rem,env(safe-area-inset-top))] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[var(--container-game)] rounded-2xl shadow-soft-lg pointer-events-auto overflow-hidden text-white',
     {
-      'bg-rose-500 text-white': variant === 'error',
-      'bg-nature-emerald-600 text-white': variant === 'success',
+      'bg-[var(--danger-bg-color)]': variant === 'error',
+      'bg-[var(--accent-color)]': variant === 'success',
     },
   )
 
@@ -29,8 +29,10 @@ export const Alert = ({ isOpen, message, variant = 'error' }: Props) => {
       leaveTo="opacity-0"
     >
       <div className={classes} role="alert" aria-live="assertive">
-        <div className="p-4">
-          <p className="text-center text-sm font-medium">{message}</p>
+        <div className="px-4 py-3">
+          <p className="text-center text-sm leading-snug font-medium text-balance break-words">
+            {message}
+          </p>
         </div>
       </div>
     </Transition>

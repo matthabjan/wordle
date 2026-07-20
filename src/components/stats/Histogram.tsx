@@ -10,7 +10,7 @@ export const Histogram = ({ gameStats }: Props) => {
   const maxValue = Math.max(...winDistribution, 1)
 
   return (
-    <div className="m-2 justify-left columns-1 text-sm dark:text-nature-stone-50">
+    <div className="mt-2 text-sm dark:text-nature-stone-50">
       <ul className="sr-only">
         {winDistribution.map((value, i) => (
           <li key={i}>

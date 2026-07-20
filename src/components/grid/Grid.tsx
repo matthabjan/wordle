@@ -1,4 +1,3 @@
-import { motion, useReducedMotion } from 'framer-motion'
 import { MAX_CHALLENGES } from '../../constants/settings'
 import { CompletedRow } from './CompletedRow'
 import { CurrentRow } from './CurrentRow'
@@ -12,6 +11,7 @@ type Props = {
   isRevealing?: boolean
   currentRowClassName: string
   isGameWon?: boolean
+  isGameLost?: boolean
   solution: string
 }
 
@@ -23,41 +23,28 @@ export const Grid = ({
   isRevealing,
   currentRowClassName,
   isGameWon = false,
+  isGameLost = false,
   solution,
 }: Props) => {
-  const empties =
-    guesses.length < MAX_CHALLENGES - 1
-      ? Array.from(Array(MAX_CHALLENGES - 1 - guesses.length))
-      : []
-  const reduceMotion = useReducedMotion()
+  const remaining = MAX_CHALLENGES - guesses.length
+  const showCurrentRow = remaining > 0 && !isGameWon && !isGameLost
+  const empties = Array.from({
+    length: showCurrentRow ? remaining - 1 : Math.max(remaining, 0),
+  })
 
   return (
-    <motion.div className="pb-4" role="grid" aria-label="Wordle-Raster">
+    <div className="pb-4" role="grid" aria-label="Wordle-Raster">
       {guesses.map((guess, i) => (
-        <motion.div
+        <CompletedRow
           key={i}
-          animate={
-            isGameWon && !reduceMotion
-              ? {
-                  scale: [1, 1.05, 1],
-                  y: [0, -4, 0],
-                }
-              : { scale: 1, y: 0 }
-          }
-          transition={{
-            duration: 0.6,
-            delay: isGameWon ? i * 0.1 : 0,
-          }}
-        >
-          <CompletedRow
-            guess={guess}
-            solution={solution}
-            rowIndex={i}
-            isRevealing={isRevealing && guesses.length - 1 === i}
-          />
-        </motion.div>
+          guess={guess}
+          solution={solution}
+          rowIndex={i}
+          isRevealing={isRevealing && guesses.length - 1 === i}
+          celebrate={isGameWon}
+        />
       ))}
-      {guesses.length < MAX_CHALLENGES && (
+      {showCurrentRow && (
         <CurrentRow
           guess={currentGuess}
           cursorIndex={cursorIndex}
@@ -68,6 +55,6 @@ export const Grid = ({
       {empties.map((_, i) => (
         <EmptyRow key={i} />
       ))}
-    </motion.div>
+    </div>
   )
 }

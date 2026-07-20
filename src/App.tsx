@@ -4,7 +4,6 @@ import {
   InformationCircleIcon,
 } from '@heroicons/react/24/outline'
 import { useCallback, useEffect, useState } from 'react'
-import './App.css'
 import { AlertContainer } from './components/alerts/AlertContainer'
 import { Grid } from './components/grid/Grid'
 import { Keyboard } from './components/keyboard/Keyboard'
@@ -22,6 +21,9 @@ import { useGameState } from './hooks/useGameState'
 import { useTheme } from './hooks/useTheme'
 import { useWordOfDay } from './hooks/useWordOfDay'
 import { loadGameStateFromLocalStorage } from './lib/localStorage'
+
+const headerIconClass =
+  'flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-nature-stone-700 transition hover:bg-nature-stone-200/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 dark:text-nature-stone-200 dark:hover:bg-nature-stone-800 dark:focus-visible:ring-offset-nature-stone-900'
 
 function App() {
   const { solution, solutionIndex, tomorrow } = useWordOfDay()
@@ -75,63 +77,64 @@ function App() {
   const handleShareFailure = () => showErrorAlert(SHARE_FAILED_MESSAGE)
 
   return (
-    <div className="mx-auto flex min-h-[100dvh] max-w-7xl flex-col bg-nature-stone-50 pt-[max(0.5rem,env(safe-area-inset-top))] pb-[max(0.5rem,env(safe-area-inset-bottom))] transition-colors duration-300 dark:bg-nature-stone-900 sm:px-6 lg:px-8">
-      <header className="mx-auto mt-3 mb-4 flex w-full max-w-md items-center px-4 sm:px-0">
-        <h1 className="ml-1 grow font-display text-[clamp(1.5rem,6vw,2.25rem)] font-bold tracking-tight text-nature-stone-900 dark:text-nature-stone-50">
-          {GAME_TITLE}
-        </h1>
-        <button
-          type="button"
-          className="mr-1 flex h-11 w-11 items-center justify-center rounded-full text-nature-stone-700 transition hover:bg-nature-stone-200/70 dark:text-nature-stone-200 dark:hover:bg-nature-stone-800"
-          aria-label="Hilfe"
-          onClick={() => setIsInfoModalOpen(true)}
-        >
-          <InformationCircleIcon className="h-7 w-7" />
-        </button>
-        <button
-          type="button"
-          className="mr-1 flex h-11 w-11 items-center justify-center rounded-full text-nature-stone-700 transition hover:bg-nature-stone-200/70 dark:text-nature-stone-200 dark:hover:bg-nature-stone-800"
-          aria-label="Statistik"
-          onClick={() => setIsStatsModalOpen(true)}
-        >
-          <ChartBarIcon className="h-7 w-7" />
-        </button>
-        <button
-          type="button"
-          className="flex h-11 w-11 items-center justify-center rounded-full text-nature-stone-700 transition hover:bg-nature-stone-200/70 dark:text-nature-stone-200 dark:hover:bg-nature-stone-800"
-          aria-label="Einstellungen"
-          onClick={() => setIsSettingsModalOpen(true)}
-        >
-          <Cog6ToothIcon className="h-7 w-7" />
-        </button>
-      </header>
+    <div className="flex min-h-[100dvh] flex-col bg-nature-stone-50 pt-[max(0.5rem,env(safe-area-inset-top))] pb-[max(0.5rem,env(safe-area-inset-bottom))] transition-colors duration-300 dark:bg-nature-stone-900">
+      <div className="game-column flex min-h-0 flex-1 flex-col">
+        <header className="mt-3 mb-4 flex w-full items-center gap-1">
+          <h1 className="min-w-0 grow truncate font-display text-[clamp(1.5rem,6vw,2.25rem)] font-bold tracking-tight text-nature-stone-900 dark:text-nature-stone-50">
+            {GAME_TITLE}
+          </h1>
+          <button
+            type="button"
+            className={headerIconClass}
+            aria-label="Hilfe"
+            onClick={() => setIsInfoModalOpen(true)}
+          >
+            <InformationCircleIcon className="h-7 w-7" />
+          </button>
+          <button
+            type="button"
+            className={headerIconClass}
+            aria-label="Statistik"
+            onClick={() => setIsStatsModalOpen(true)}
+          >
+            <ChartBarIcon className="h-7 w-7" />
+          </button>
+          <button
+            type="button"
+            className={headerIconClass}
+            aria-label="Einstellungen"
+            onClick={() => setIsSettingsModalOpen(true)}
+          >
+            <Cog6ToothIcon className="h-7 w-7" />
+          </button>
+        </header>
 
-      {updateAvailable && (
-        <button
-          type="button"
-          className="mx-auto mb-2 max-w-md rounded-full bg-nature-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-soft"
-          onClick={() =>
-            window.dispatchEvent(new CustomEvent('pwa-apply-update'))
-          }
-        >
-          {UPDATE_AVAILABLE_MESSAGE}
-        </button>
-      )}
+        {updateAvailable && (
+          <button
+            type="button"
+            className="mb-2 w-full rounded-full bg-[var(--accent-color)] px-4 py-2 text-sm leading-snug font-medium text-balance text-white shadow-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-nature-stone-900"
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent('pwa-apply-update'))
+            }
+          >
+            {UPDATE_AVAILABLE_MESSAGE}
+          </button>
+        )}
 
-      <div className="flex flex-1 flex-col items-center justify-center px-3">
-        <Grid
-          guesses={guesses}
-          currentGuess={currentGuess}
-          cursorIndex={cursorIndex}
-          onSelectCell={setCursor}
-          isRevealing={isRevealing}
-          currentRowClassName={currentRowClass}
-          isGameWon={isGameWon}
-          solution={solution}
-        />
-      </div>
+        <div className="flex flex-1 flex-col items-center justify-center py-2">
+          <Grid
+            guesses={guesses}
+            currentGuess={currentGuess}
+            cursorIndex={cursorIndex}
+            onSelectCell={setCursor}
+            isRevealing={isRevealing}
+            currentRowClassName={currentRowClass}
+            isGameWon={isGameWon}
+            isGameLost={isGameLost}
+            solution={solution}
+          />
+        </div>
 
-      <div className="w-full px-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] sm:px-4">
         <Keyboard
           onChar={onChar}
           onDelete={onDelete}

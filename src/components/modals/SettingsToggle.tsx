@@ -14,22 +14,16 @@ export const SettingsToggle = ({
   description,
 }: Props) => {
   const toggleHolder = classnames(
-    'w-14 h-8 flex items-center rounded-full p-1 duration-300 ease-in-out',
+    'flex h-8 w-14 shrink-0 items-center rounded-full p-1 duration-300 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-nature-stone-800',
     {
-      'bg-nature-emerald-500': flag,
-      'bg-nature-stone-300 dark:bg-nature-stone-600': !flag,
-    },
-  )
-  const toggleButton = classnames(
-    'bg-white w-6 h-6 rounded-full shadow-md transform duration-300 ease-in-out',
-    {
-      'translate-x-6': flag,
+      'justify-end bg-[var(--accent-color)]': flag,
+      'justify-start bg-nature-stone-300 dark:bg-nature-stone-600': !flag,
     },
   )
 
   return (
-    <div className="mt-3 flex items-center justify-between gap-8">
-      <div className="text-left">
+    <div className="mt-3 flex items-center justify-between gap-4">
+      <div className="min-w-0 flex-1 text-left">
         <h2 className="font-medium text-nature-stone-700 dark:text-nature-stone-200">
           {settingName}
         </h2>
@@ -47,7 +41,7 @@ export const SettingsToggle = ({
         className={toggleHolder}
         onClick={() => handleFlag(!flag)}
       >
-        <span className={toggleButton} />
+        <span className="h-6 w-6 rounded-full bg-white shadow-soft duration-300 ease-in-out" />
       </button>
     </div>
   )

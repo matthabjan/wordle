@@ -136,13 +136,11 @@
   --font-sans: Inter, system-ui, -apple-system, sans-serif;
   --font-display: Montserrat, Inter, system-ui, sans-serif;
 
-  --shadow-inner-soft: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  /* Shared game column: header, board, keyboard, toasts */
+  --container-game: 28rem;
+
   --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08);
   --shadow-soft-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
-
-  --animate-pop: pop 0.15s ease-out;
-  --animate-shake: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97);
-  --animate-flip: flip 0.5s cubic-bezier(0.45, 0.05, 0.55, 0.95);
 }
 
 @layer base {
@@ -170,9 +168,18 @@
   }
 }
 
+@layer components {
+  /* Single rhythm for header, board, keyboard */
+  .game-column {
+    width: 100%;
+    max-width: var(--container-game);
+    margin-inline: auto;
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
 :root {
-  --animation-speed: 1000ms;
-  --animation-speed-fast: 250ms;
   --tile-size: clamp(2.75rem, 14vw, 3.5rem);
   --key-height: clamp(2.75rem, 8dvh, 3.625rem);
 
@@ -180,11 +187,16 @@
   --default-cell-border-color: #d6d3d1;
   --default-cell-text-color: #1c1917;
   --absent-cell-bg-color: #78716c;
-  --correct-cell-bg-color: #10b981;
+  --correct-cell-bg-color: #059669;
   --present-cell-bg-color: #f59e0b;
 
+  --accent-color: #059669;
+  --danger-bg-color: #e11d48;
+  --focus-ring-color: #059669;
+  --cursor-ring-color: rgba(5, 150, 105, 0.45);
+  --cursor-ring-color-strong: rgba(5, 150, 105, 0.85);
+
   --cell-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
-  --cell-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.1);
   --inner-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
 }
 
@@ -193,13 +205,46 @@
   --default-cell-border-color: #57534e;
   --default-cell-text-color: #fafaf9;
   --absent-cell-bg-color: #44403c;
-  --correct-cell-bg-color: #059669;
+  --correct-cell-bg-color: #047857;
   --present-cell-bg-color: #d97706;
+  --accent-color: #059669;
+  --focus-ring-color: #10b981;
+  --cursor-ring-color: rgba(16, 185, 129, 0.45);
+  --cursor-ring-color-strong: rgba(16, 185, 129, 0.85);
 }
 
 .high-contrast {
   --correct-cell-bg-color: #ea580c;
   --present-cell-bg-color: #0891b2;
+  --accent-color: #ea580c;
+  --focus-ring-color: #ea580c;
+  --cursor-ring-color: rgba(234, 88, 12, 0.45);
+  --cursor-ring-color-strong: rgba(234, 88, 12, 0.85);
+}
+
+.cell-status-absent,
+.key-status-absent {
+  background-color: var(--absent-cell-bg-color);
+  border-color: var(--absent-cell-bg-color);
+  color: #fff;
+}
+
+.cell-status-correct,
+.key-status-correct {
+  background-color: var(--correct-cell-bg-color);
+  border-color: var(--correct-cell-bg-color);
+  color: #fff;
+}
+
+.cell-status-present,
+.key-status-present {
+  background-color: var(--present-cell-bg-color);
+  border-color: var(--present-cell-bg-color);
+  color: #fff;
+}
+
+.cell-cursor {
+  --tw-ring-color: var(--focus-ring-color);
 }
 
 .cell-fill-animation {
@@ -347,10 +392,10 @@
 @keyframes cursorPulse {
   0%,
   100% {
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.45);
+    box-shadow: 0 0 0 2px var(--cursor-ring-color);
   }
   50% {
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.85);
+    box-shadow: 0 0 0 3px var(--cursor-ring-color-strong);
   }
 }
 

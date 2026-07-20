@@ -42,7 +42,7 @@ export const StatsModal = ({
   solutionIndex,
 }: Props) => {
   const shareButtonClass =
-    'mt-2 w-full rounded-xl border border-transparent px-4 py-3 text-base font-medium text-white shadow-soft bg-nature-emerald-600 hover:bg-nature-emerald-700 focus:outline-none focus:ring-2 focus:ring-nature-emerald-500 focus:ring-offset-2 sm:text-sm dark:focus:ring-offset-nature-stone-800'
+    'mt-2 w-full rounded-xl border border-transparent px-4 py-3 text-base font-medium text-white shadow-soft bg-[var(--accent-color)] hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 sm:text-sm dark:focus-visible:ring-offset-nature-stone-800'
 
   if (gameStats.totalGames <= 0) {
     return (
@@ -63,7 +63,7 @@ export const StatsModal = ({
       handleClose={handleClose}
     >
       <StatBar gameStats={gameStats} />
-      <h4 className="mt-4 font-display text-lg leading-6 font-medium text-nature-stone-900 dark:text-nature-stone-50">
+      <h4 className="mt-4 font-display text-lg leading-6 font-semibold text-nature-stone-900 dark:text-nature-stone-50">
         {GUESS_DISTRIBUTION_TEXT}
       </h4>
       <Histogram gameStats={gameStats} />

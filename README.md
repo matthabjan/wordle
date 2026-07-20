@@ -1,4 +1,4 @@
-# Wordle 2.1 - German Edition
+# Wordle 2.2 - German Edition
 
 A modern German implementation of the popular Wordle game. This project is originally forked from [woertchen](https://github.com/diondiondion/woertchen) and features a curated German word list with enhanced accessibility and universal keyboard support.
 

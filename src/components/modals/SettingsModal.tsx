@@ -40,7 +40,7 @@ export const SettingsModal = ({
           settingName="Hoher Kontrast"
           flag={isHighContrastMode}
           handleFlag={handleHighContrastMode}
-          description="Farben für bessere Erkennbarkeit (farbenblindfreundlich)."
+          description="Farben für bessere Erkennbarkeit."
         />
       </div>
     </BaseModal>

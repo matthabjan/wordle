@@ -16,7 +16,7 @@ export const WIN_MESSAGES = [
 ]
 export const GAME_COPIED_MESSAGE = 'Spielverlauf kopiert'
 export const SHARE_FAILED_MESSAGE = 'Teilen fehlgeschlagen'
-export const UPDATE_AVAILABLE_MESSAGE = 'Update verfügbar – tippen zum Neuladen'
+export const UPDATE_AVAILABLE_MESSAGE = 'Update verfügbar – neu laden'
 export const ABOUT_GAME_MESSAGE = 'Über Wordle'
 export const NOT_ENOUGH_LETTERS_MESSAGE = 'Nicht genug Buchstaben'
 export const WORD_NOT_FOUND_MESSAGE = 'Wort nicht gefunden'
@@ -35,10 +35,10 @@ export const GUESS_DISTRIBUTION_TEXT = 'Versuchsverteilung'
 export const NEW_WORD_TEXT = 'Neues Wort in'
 export const SHARE_TEXT = 'Teilen'
 export const SHARE_SPOILER_TEXT = 'Mit Spoilern kopieren'
-export const TOTAL_TRIES_TEXT = 'Spiele gesamt'
-export const SUCCESS_RATE_TEXT = 'Spiele gewonnen'
-export const CURRENT_STREAK_TEXT = 'Aktuelle Gewinnserie'
-export const BEST_STREAK_TEXT = 'Längste Gewinnserie'
+export const TOTAL_TRIES_TEXT = 'Spiele'
+export const SUCCESS_RATE_TEXT = 'Gewonnen'
+export const CURRENT_STREAK_TEXT = 'Serie'
+export const BEST_STREAK_TEXT = 'Rekord'
 export const EDIT_LETTER_LABEL = (position: number) =>
   `Buchstabe ${position} bearbeiten`
 export const STATUS_CORRECT = 'richtig'

@@ -45,7 +45,7 @@ export const BaseModal = ({ title, children, isOpen, handleClose }: Props) => {
             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
             leaveTo="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
           >
-            <div className="relative inline-block w-full max-w-md transform overflow-hidden rounded-t-3xl border border-nature-stone-200 bg-nature-stone-50 px-5 pt-3 pb-6 text-left align-bottom shadow-soft-lg transition-all sm:my-8 sm:rounded-3xl sm:align-middle sm:p-6 dark:border-nature-stone-700 dark:bg-nature-stone-800">
+            <div className="relative inline-block w-full max-w-[var(--container-game)] transform overflow-hidden rounded-t-3xl border border-nature-stone-200 bg-nature-stone-50 px-5 pt-3 pb-6 text-left align-bottom shadow-soft-lg transition-all sm:my-8 sm:rounded-3xl sm:align-middle sm:p-6 dark:border-nature-stone-700 dark:bg-nature-stone-800">
               <div
                 className="mx-auto mb-3 h-1 w-10 rounded-full bg-nature-stone-300 sm:hidden dark:bg-nature-stone-600"
                 aria-hidden="true"
@@ -53,7 +53,7 @@ export const BaseModal = ({ title, children, isOpen, handleClose }: Props) => {
               <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
                 <button
                   type="button"
-                  className="flex h-10 w-10 items-center justify-center rounded-full text-nature-stone-600 transition hover:bg-nature-stone-200 dark:text-nature-stone-200 dark:hover:bg-nature-stone-700"
+                  className="flex h-10 w-10 items-center justify-center rounded-full text-nature-stone-600 transition hover:bg-nature-stone-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 dark:text-nature-stone-200 dark:hover:bg-nature-stone-700 dark:focus-visible:ring-offset-nature-stone-800"
                   aria-label="Schließen"
                   onClick={() => handleClose()}
                 >
