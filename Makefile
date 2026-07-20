@@ -1,4 +1,4 @@
-.PHONY: help build up down restart logs ps clean build-prod up-prod down-prod logs-prod health up-traefik down-traefik
+.PHONY: help build up down restart logs ps clean build-prod up-prod down-prod logs-prod health
 
 # Default target
 help:
@@ -14,9 +14,7 @@ help:
 	@echo "Production Commands:"
 	@echo "  make build-prod   - Build production Docker image"
 	@echo "  make up-prod      - Start production container (host :8080)"
-	@echo "  make up-traefik   - Start behind Traefik (no host ports)"
 	@echo "  make down-prod    - Stop production container"
-	@echo "  make down-traefik - Stop Traefik deployment"
 	@echo "  make logs-prod    - View production logs"
 	@echo "  make restart-prod - Restart production container"
 	@echo "  make health       - Check production container health"
@@ -59,23 +57,8 @@ up-prod:
 	@echo "Access at: http://localhost:8080"
 	@echo ""
 
-up-traefik:
-	@if [ ! -f .env.docker ]; then \
-		echo "Copy .env.docker.example to .env.docker and set WORDLE_HOST"; \
-		exit 1; \
-	fi
-	docker compose --env-file .env.docker \
-		-f docker-compose.prod.yml -f docker-compose.traefik.yml up -d --build
-	@echo ""
-	@echo "Traefik deployment started (no host ports)."
-	@echo "Ensure Traefik network 'proxy' exists and WORDLE_HOST is set."
-	@echo ""
-
 down-prod:
 	docker compose -f docker-compose.prod.yml down
-
-down-traefik:
-	docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml down
 
 restart-prod:
 	docker compose -f docker-compose.prod.yml restart
@@ -98,7 +81,6 @@ clean:
 	@echo "Stopping all wordle containers..."
 	@docker stop wordle-dev wordle-app 2>/dev/null || true
 	@docker compose -f docker-compose.prod.yml down 2>/dev/null || true
-	@docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml down 2>/dev/null || true
 	@echo "Removing containers..."
 	@docker rm wordle-dev wordle-app 2>/dev/null || true
 	@echo "Removing images..."

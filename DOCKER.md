@@ -145,29 +145,47 @@ To change application settings (title, description, etc.):
 
 ## SSL/TLS Setup
 
-### Option 1: Traefik (Recommended for home servers)
+### Option 1: Traefik / Portainer (Recommended for home servers)
 
-Use the Traefik overlay so the Wordle container has **no published host ports**. Traefik terminates TLS and sets HSTS; the app nginx still sends CSP and other security headers.
+Build the `wordle:prod` image, then run it from your own Portainer/Traefik stack with **no published host ports**. Traefik terminates TLS and sets HSTS; the app nginx still sends CSP and other security headers.
 
-**Prerequisites**
-
-- Traefik on Docker, attached to an external network named `proxy`
-- Entrypoints `web` (80) and `websecure` (443)
-- Cert resolver named `letsencrypt` (adjust the label in `docker-compose.traefik.yml` if yours differs)
-
-**Deploy**
+**Build the image**
 
 ```bash
-cp .env.docker.example .env.docker
-# Set WORDLE_HOST=wordle.yourdomain.com and VITE_* as needed
-
-docker network create proxy   # once, if Traefik already uses another name, edit the overlay
-
-docker compose --env-file .env.docker \
-  -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d --build
+docker build --target prod -t wordle:prod \
+  --build-arg VITE_GAME_NAME="Wordle 2.1" \
+  --build-arg VITE_GAME_DESCRIPTION="Wordle auf Deutsch" \
+  .
 ```
 
-Or: `make up-traefik`
+**Example Portainer / Compose stack** (adjust entrypoint and middlewares to match your Traefik):
+
+```yaml
+services:
+  wordle:
+    image: wordle:prod
+    container_name: wordle
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.wordle.rule=Host(`wordle.example.com`)"
+      - "traefik.http.routers.wordle.entrypoints=HTTPS"
+      - "traefik.http.routers.wordle.tls=true"
+      - "traefik.http.routers.wordle.tls.certresolver=letsencrypt"
+      - "traefik.http.services.wordle.loadbalancer.server.port=8080"
+
+networks:
+  proxy:
+    external: true
+```
 
 **Firewall checklist**
 
@@ -180,8 +198,7 @@ Or: `make up-traefik`
 **Verify headers from the app container**
 
 ```bash
-docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml exec wordle \
-  wget -q -S -O /dev/null http://localhost:8080/ 2>&1 | head -30
+docker exec wordle wget -q -S -O /dev/null http://localhost:8080/ 2>&1 | head -30
 ```
 
 ### Option 2: Built-in nginx SSL proxy (legacy)
@@ -415,17 +432,17 @@ The production image uses multi-stage builds and Alpine Linux. Build args bake `
 1. **Non-root nginx user** (`wordle`, UID 1001) in the final image
 2. **Security headers** on the app nginx (`default.conf`): CSP, nosniff, frame deny, referrer, permissions-policy, COOP — HSTS belongs on Traefik
 3. **Self-hosted fonts** — no Google Fonts egress
-4. **Traefik overlay**: no host ports, `cap_drop: ALL`, `no-new-privileges`, `read_only` + tmpfs
+4. **Traefik/Portainer**: no host ports for the Wordle container; optional `cap_drop` / `no-new-privileges` / `read_only` + tmpfs in your stack
 5. **Firewall**: only 80/443 to Traefik; never expose 8080 publicly
 6. **Keep images updated** and scan (`docker scout` / Trivy)
 7. **No secrets in the SPA** — `VITE_*` are public build-time strings only
 
 ## Production Checklist
 
-- [ ] `.env.docker` configured (`WORDLE_HOST`, `VITE_*`)
-- [ ] Traefik network `proxy` exists; cert resolver name matches labels
+- [ ] Image built with desired `VITE_*` args (`wordle:prod`)
+- [ ] Traefik network / labels configured in your Portainer stack
 - [ ] Firewall: 80/443 only; 8080 not published
-- [ ] Health check green (`make health` or compose health)
+- [ ] Health check green
 - [ ] CSP / nosniff / frame headers verified
 - [ ] Fonts served from `/fonts/` (same origin)
 - [ ] Log rotation configured

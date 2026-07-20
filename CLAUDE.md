@@ -18,17 +18,18 @@ npm run fix # prettier --write src
 Docker (see `DOCKER.md` / `Makefile`):
 
 ```bash
-make up-prod    # local prod via docker-compose.prod.yml → :8080
-make up-traefik # Traefik overlay (no host ports; needs WORDLE_HOST + proxy network)
-make health     # container health
+make up-prod # local prod via docker-compose.prod.yml → :8080
+make health  # container health
 ```
+
+For public Traefik/Portainer deploy: build `wordle:prod`, run your own stack (no host port 8080). See `DOCKER.md`.
 
 Security notes for public deploy:
 
 - App nginx sends CSP / nosniff / frame-deny (see `docker/etc/nginx/conf.d/default.conf`).
 - HSTS is Traefik’s job after TLS termination.
 - Fonts are self-hosted under `public/fonts/` (no Google Fonts).
-- Prefer `docker-compose.traefik.yml` so port 8080 is never published.
+- Do not publish port 8080 when behind Traefik.
 
 CI (Node 22): `.github/workflows/lint.yml`, `.github/workflows/test.yml` on `main` and PRs.
 
