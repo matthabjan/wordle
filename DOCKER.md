@@ -101,6 +101,7 @@ docker-compose -f docker-compose.prod.yml logs -f wordle
 By default, the application runs on port 8080. To change it:
 
 1. Edit `.env.docker`:
+
    ```bash
    WORDLE_PORT=3000
    ```
@@ -171,21 +172,21 @@ services:
     container_name: wordle
     restart: unless-stopped
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
     networks:
       - proxy
       - leaderboard-internal
     labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
-      - "traefik.http.routers.wordle.rule=Host(`wordle.example.com`)"
-      - "traefik.http.routers.wordle.entrypoints=HTTPS"
-      - "traefik.http.routers.wordle.tls=true"
-      - "traefik.http.routers.wordle.tls.certresolver=letsencrypt"
-      - "traefik.http.services.wordle.loadbalancer.server.port=8080"
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+      - 'traefik.http.routers.wordle.rule=Host(`wordle.example.com`)'
+      - 'traefik.http.routers.wordle.entrypoints=HTTPS'
+      - 'traefik.http.routers.wordle.tls=true'
+      - 'traefik.http.routers.wordle.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.wordle.loadbalancer.server.port=8080'
 
   # Optional — powers the daily leaderboard folded into the Stats modal.
   # Omit this service entirely and the app keeps working normally; nginx's
@@ -201,10 +202,10 @@ services:
     volumes:
       - leaderboard-data:/data
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -269,10 +270,11 @@ Let Caddy/Traefik set HSTS; the app image already sends CSP and related headers.
 
 ## Leaderboard API (optional)
 
-`server/` is a small Fastify + SQLite service that powers the daily leaderboard folded into the Stats modal. It's entirely optional — the core game works identically with or without it.
+`server/` is a small Fastify + SQLite service that powers the daily and overall leaderboard folded into the Stats modal. It's entirely optional — the core game works identically with or without it.
 
 - **Auth**: one shared `LEADERBOARD_PASSPHRASE` env var; anyone who knows it enters it once alongside a display name, cached in `localStorage` on their device. There's no per-person account — the passphrase is the only gate.
 - **Data**: one SQLite file (`/data/leaderboard.db` inside the container), one row per `(date, name)`, kept forever — never deleted or overwritten across days, only upserted for the same person on the same day.
+- **Overall ranking**: calculated by the server from those daily rows. A win awards 6 points for one guess down to 1 point for six guesses; a loss awards 0. Ties are resolved by wins, then lower average guesses.
 - **Reveal**: a viewer only sees full guess grids for others once they've submitted their own result for that day; until then they see just name + guess count.
 - **Failure mode**: nginx proxies `/api/` to the `leaderboard-api` container using Docker's embedded DNS resolved at request time (not at nginx startup) — so if `leaderboard-api` is stopped, removed, or never deployed, the main app still starts and plays normally; the leaderboard section in Stats just shows nothing or "derzeit nicht verfügbar".
 - **Local dev**: `cd server && LEADERBOARD_PASSPHRASE=devsecret npm install && npm start` runs it on `:3001`; `vite.config.ts` already proxies `/api` there for `npm run dev`.
@@ -289,16 +291,19 @@ docker run --rm -v leaderboard-data:/data -v "$PWD":/backup alpine \
 ### View Logs
 
 **Real-time logs**:
+
 ```bash
 docker-compose -f docker-compose.prod.yml logs -f
 ```
 
 **Specific service logs**:
+
 ```bash
 docker-compose -f docker-compose.prod.yml logs -f wordle
 ```
 
 **Last 100 lines**:
+
 ```bash
 docker-compose -f docker-compose.prod.yml logs --tail=100
 ```
@@ -306,11 +311,13 @@ docker-compose -f docker-compose.prod.yml logs --tail=100
 ### Health Checks
 
 Check container health:
+
 ```bash
 docker inspect --format='{{.State.Health.Status}}' wordle-app
 ```
 
 View health check logs:
+
 ```bash
 docker inspect --format='{{json .State.Health}}' wordle-app | jq
 ```
@@ -318,6 +325,7 @@ docker inspect --format='{{json .State.Health}}' wordle-app | jq
 ### Container Stats
 
 View resource usage:
+
 ```bash
 docker stats wordle-app
 ```
@@ -327,11 +335,13 @@ docker stats wordle-app
 ### Container Won't Start
 
 1. **Check logs**:
+
    ```bash
    docker-compose -f docker-compose.prod.yml logs wordle
    ```
 
 2. **Verify port availability**:
+
    ```bash
    sudo netstat -tulpn | grep 8080
    ```
@@ -345,11 +355,13 @@ docker stats wordle-app
 ### Application Not Accessible
 
 1. **Check if container is running**:
+
    ```bash
    docker ps | grep wordle
    ```
 
 2. **Test from inside container**:
+
    ```bash
    docker-compose -f docker-compose.prod.yml exec wordle wget -q -O- http://localhost:8080
    ```
@@ -363,11 +375,13 @@ docker stats wordle-app
 ### SSL Issues
 
 1. **Verify certificate paths**:
+
    ```bash
    ls -la certs/
    ```
 
 2. **Check nginx configuration**:
+
    ```bash
    docker-compose -f docker-compose.prod.yml exec nginx-proxy nginx -t
    ```
@@ -433,7 +447,7 @@ services:
   nginx-lb:
     image: nginx:1.27-alpine
     ports:
-      - "80:80"
+      - '80:80'
     volumes:
       - ./docker/lb/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -441,6 +455,7 @@ services:
 ```
 
 2. Start with scale:
+
 ```bash
 docker-compose -f docker-compose.scale.yml up -d --scale wordle=3
 ```
@@ -506,6 +521,7 @@ The production image uses multi-stage builds and Alpine Linux. Build args bake `
 ## Support
 
 For issues related to:
+
 - **Docker setup**: Check this guide and Docker logs
 - **Application features**: See main [README.md](README.md)
 - **Word lists**: See main [README.md](README.md)

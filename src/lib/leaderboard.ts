@@ -32,6 +32,15 @@ export type LeaderboardEntry = {
   guesses?: string[]
 }
 
+export type OverallLeaderboardEntry = {
+  name: string
+  points: number
+  gamesPlayed: number
+  wins: number
+  winRate: number
+  averageGuesses: number | null
+}
+
 // Best-effort — the core single-player game must work even if this backend
 // is unreachable, so submission failures (offline, server down) are swallowed.
 export const submitLeaderboardResult = async (params: {
@@ -62,6 +71,11 @@ export type LeaderboardResult =
   | { status: 'unauthorized' }
   | { status: 'unavailable' }
 
+export type OverallLeaderboardResult =
+  | { status: 'ok'; entries: OverallLeaderboardEntry[] }
+  | { status: 'unauthorized' }
+  | { status: 'unavailable' }
+
 export const fetchLeaderboard = async (params: {
   identity: LeaderboardIdentity
   date: string
@@ -77,6 +91,28 @@ export const fetchLeaderboard = async (params: {
     if (!response.ok) return { status: 'unavailable' }
 
     const entries = (await response.json()) as LeaderboardEntry[]
+    return { status: 'ok', entries }
+  } catch {
+    return { status: 'unavailable' }
+  }
+}
+
+export const fetchOverallLeaderboard = async (params: {
+  identity: LeaderboardIdentity
+}): Promise<OverallLeaderboardResult> => {
+  try {
+    const url = new URL(
+      `${API_BASE}/leaderboard/overall`,
+      window.location.origin,
+    )
+    url.searchParams.set('name', params.identity.name)
+    url.searchParams.set('passphrase', params.identity.passphrase)
+
+    const response = await fetch(url.toString())
+    if (response.status === 401) return { status: 'unauthorized' }
+    if (!response.ok) return { status: 'unavailable' }
+
+    const entries = (await response.json()) as OverallLeaderboardEntry[]
     return { status: 'ok', entries }
   } catch {
     return { status: 'unavailable' }

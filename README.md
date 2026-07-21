@@ -13,7 +13,7 @@ A modern German implementation of the popular Wordle game. This project is origi
 - **Hard Mode** - Optional challenge mode that enforces reusing revealed hints
 - **Haptic Feedback** - Subtle vibration on key actions (skipped under reduced-motion)
 - **Statistics Tracking** - Track your progress and winning streaks
-- **Daily Leaderboard (optional)** - Passphrase-gated comparison with anyone else who knows it; self-hosted, no accounts, fails silently if not deployed — see [Daily Leaderboard](#daily-leaderboard-optional)
+- **Daily & Overall Leaderboard (optional)** - Passphrase-gated comparison with anyone else who knows it; self-hosted, no accounts, fails silently if not deployed — see [Leaderboard](#leaderboard-optional)
 - **Share Results** - Native share or clipboard, with a spoiler variant for close friends
 - **Mobile-first Design** - Optimized for one-handed phone play
 
@@ -63,7 +63,7 @@ make up-prod
 
 Open [http://localhost:8080](http://localhost:8080) in your browser.
 
-`docker-compose.prod.yml` also includes an optional `leaderboard-api` service for the daily leaderboard (set `LEADERBOARD_PASSPHRASE` in `.env.docker` to enable it — see [Daily Leaderboard](#daily-leaderboard-optional)). Omit it and the app works identically without a leaderboard.
+`docker-compose.prod.yml` also includes an optional `leaderboard-api` service (set `LEADERBOARD_PASSPHRASE` in `.env.docker` to enable it — see [Leaderboard](#leaderboard-optional)). Omit it and the app works identically without a leaderboard.
 
 For detailed Docker Compose documentation including SSL/TLS setup, monitoring, and troubleshooting, see [DOCKER.md](DOCKER.md).
 
@@ -173,12 +173,13 @@ npm run fix        # Auto-fix formatting issues
 - **Daily Puzzle**: New word every day
 - **Hard Mode**: Optional challenge mode
 
-## Daily Leaderboard (optional)
+## Leaderboard (optional)
 
-The Stats modal can show a daily leaderboard of everyone who knows a shared passphrase — no accounts, no sign-up. It's powered by a small, optional service in [server/](server/) and works like this:
+The Stats modal can show daily and overall results for everyone who knows a shared passphrase — no accounts, no sign-up. It's powered by a small, optional service in [server/](server/) and works like this:
 
 - **Join**: enter any name plus the shared passphrase, once per device (cached in `localStorage`).
 - **Submit**: your result posts automatically when a game ends — no extra step.
+- **Overall score**: wins award 6 points for one guess down to 1 point for six guesses; losses award 0. Rankings then use wins and lower average guesses as tie-breakers.
 - **Reveal is gated**: you see who's played and their guess count right away, but full guess grids only unlock once you've finished today's word yourself — so opening Stats mid-game can't spoil anything.
 - **Fails silently**: if the backend isn't deployed, isn't reachable, or you never set up a name, the game is completely unaffected — the leaderboard section just doesn't show anything.
 

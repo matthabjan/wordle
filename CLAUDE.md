@@ -82,8 +82,9 @@ server/                   # optional Fastify+SQLite leaderboard API (see DOCKER.
 - Gate is a single shared passphrase (`LEADERBOARD_PASSPHRASE` env var on the server) — no per-user accounts. Anyone who knows it can join under any name; everyone else just plays without it.
 - Identity (`leaderboardName` / `leaderboardPassphrase`) is cached in `localStorage`; distinct keys from the core game state, additive only.
 - Reveal is gated server-side: a viewer only receives other players' guess grids once they've submitted their own result for that date (see `GET /api/leaderboard` in `server/index.js`).
+- Overall rankings come from `GET /api/leaderboard/overall` and are derived server-side from daily rows: wins score 6 points for one guess down to 1 point for six guesses; losses score 0.
 - Must fail silently and never block the core game: submission (`submitLeaderboardResult`) swallows errors, and nginx resolves the `leaderboard-api` upstream at request time (not at startup) so the app still serves the game if that container is absent or down.
-- Every `(date, name)` submission is upserted, never deleted — this keeps the door open for future all-time stats without a schema change.
+- Every `(date, name)` submission is upserted and never deleted, so the overall leaderboard remains derivable without a separate aggregate table.
 
 ## Changing word length or lists
 
