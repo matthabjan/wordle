@@ -5,7 +5,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AlertContainer } from './components/alerts/AlertContainer'
-import { WinCelebration } from './components/effects/WinCelebration'
 import { Grid } from './components/grid/Grid'
 import { Keyboard } from './components/keyboard/Keyboard'
 import { InfoModal } from './components/modals/InfoModal'
@@ -201,7 +200,6 @@ function App() {
       />
 
       <AlertContainer />
-      <WinCelebration trigger={isGameWon} />
     </div>
   )
 }

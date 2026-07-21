@@ -12,7 +12,6 @@ A modern German implementation of the popular Wordle game. This project is origi
 - **Dark Mode & High-Contrast Mode** - Comfortable gameplay in any lighting, plus a colorblind-friendly palette
 - **Hard Mode** - Optional challenge mode that enforces reusing revealed hints
 - **Haptic Feedback** - Subtle vibration on key actions (skipped under reduced-motion)
-- **Win Celebration** - A small animated flourish on a win (skipped under reduced-motion)
 - **Statistics Tracking** - Track your progress and winning streaks
 - **Daily Leaderboard (optional)** - Passphrase-gated comparison with anyone else who knows it; self-hosted, no accounts, fails silently if not deployed — see [Daily Leaderboard](#daily-leaderboard-optional)
 - **Share Results** - Native share or clipboard, with a spoiler variant for close friends
@@ -130,7 +129,6 @@ wordle/
 ├── src/
 │   ├── components/   # React components
 │   │   ├── alerts/   # Alert notifications
-│   │   ├── effects/  # Win celebration and other one-off animations
 │   │   ├── grid/     # Game grid and cells
 │   │   ├── keyboard/ # Virtual keyboard
 │   │   ├── modals/   # Info, Settings, Stats modals

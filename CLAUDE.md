@@ -104,5 +104,4 @@ server/                   # optional Fastify+SQLite leaderboard API (see DOCKER.
 - `GAME_TITLE` comes from `import.meta.env.VITE_GAME_NAME` — ensure env is set for builds that need a title.
 - Reveal animations use `REVEAL_TIME_MS`; lose/win delays depend on it — don't hardcode timings elsewhere.
 - PWA service worker is registered via `vite-plugin-pwa` (`virtual:pwa-register`).
-- `WinCelebration` (in `src/components/effects/`) triggers once per fresh win via a transition-detecting ref, not on `isGameWon` alone — otherwise reloading an already-won day would replay it. It renders nothing under `prefers-reduced-motion`, matching every other animation in the app.
 - `server/` has its own `package.json`/`node_modules`, separate from the root — `npm install` at repo root does not install it; `cd server && npm install`.
