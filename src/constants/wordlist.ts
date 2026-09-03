@@ -214,7 +214,7 @@ export const WORDS = [
   'armut',
   'lanze',
   'vegan',
-  'keimt',
+  'forum,
   'erben',
   'weide',
   'degen',
