@@ -45,6 +45,9 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      - name: Server tests
+        working-directory: server
+        run: npm ci && npm test
 
   image:
     needs: verify
@@ -112,3 +115,25 @@ jobs:
         with:
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-') }}
+
+  hub-description:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: image
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: wordle
+            short: German Wordle PWA (nginx, port 8080)
+          - name: wordle-leaderboard-api
+            short: Optional leaderboard API for matthabjan/wordle (port 3001)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ env.IMAGE_NAMESPACE }}/${{ matrix.name }}
+          short-description: ${{ matrix.short }}
+          readme-filepath: ./README.md
+          enable-url-completion: true

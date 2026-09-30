@@ -170,16 +170,20 @@ npm run release:patch   # or release:minor / release:major — bumps package.jso
 git push --follow-tags
 ```
 
-The tag push runs lint + tests, checks the tag matches `package.json`, pushes the images and creates a GitHub Release.
-One-time setup: repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (Docker Hub access token, Read & Write).
+Without a local checkout: edit `version` in `package.json` on GitHub, then **Releases → Draft a new release** with a new tag `vX.Y.Z` on `main`.
+
+The tag push runs lint + tests (app and `server/`), checks the tag matches `package.json`, pushes the images, creates a GitHub Release and syncs `README.md` to both Docker Hub repository descriptions.
+One-time setup: repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (Docker Hub access token, Read, Write & Delete — Delete is required to update descriptions).
+
+Dependabot (`.github/dependabot.yml`) opens weekly PRs against `development` for npm (root + `server/`), Docker base images and GitHub Actions; major version bumps of npm packages and base images are ignored and upgraded deliberately.
 
 ## SSL/TLS Setup
 
 ### Option 1: Traefik / Portainer (Recommended for home servers)
 
-Build the `wordle:prod` image, then run it from your own Portainer/Traefik stack with **no published host ports**. Traefik terminates TLS and sets HSTS; the app nginx still sends CSP and other security headers.
+Run the [prebuilt images](#prebuilt-images-docker-hub) from your own Portainer/Traefik stack with **no published host ports**. Traefik terminates TLS and sets HSTS; the app nginx still sends CSP and other security headers. Pin both images to the same release (e.g. `2.3.1`) and update them together.
 
-**Build the images**
+**Or build the images yourself** (only needed for custom `VITE_*` values)
 
 ```bash
 docker build --target prod -t wordle:prod \
@@ -196,9 +200,15 @@ docker build -t wordle-leaderboard-api:prod ./server
 ```yaml
 services:
   wordle:
-    image: wordle:prod
+    image: matthabjan/wordle:2.3.1
     container_name: wordle
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     logging:
       driver: "json-file"
       options:
@@ -222,13 +232,20 @@ services:
   # "leaderboard-api" and share a network with "wordle" — nginx resolves that name
   # at request time (see docker/etc/nginx/conf.d/default.conf).
   leaderboard-api:
-    image: wordle-leaderboard-api:prod
+    image: matthabjan/wordle-leaderboard-api:2.3.1
     container_name: leaderboard-api
     restart: unless-stopped
     environment:
       - LEADERBOARD_PASSPHRASE=${LEADERBOARD_PASSPHRASE}
     volumes:
       - leaderboard-data:/data
+    # 127.0.0.1, not localhost: the API listens on IPv4 only.
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:3001/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     logging:
       driver: "json-file"
       options:

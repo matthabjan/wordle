@@ -1,4 +1,4 @@
-# Wordle 2.2 - German Edition
+# Wordle - German Edition
 
 A modern German implementation of the popular Wordle game. This project is originally forked from [woertchen](https://github.com/diondiondion/woertchen) and features a curated German word list with enhanced accessibility and universal keyboard support.
 
@@ -24,7 +24,7 @@ A modern German implementation of the popular Wordle game. This project is origi
 Clone the repository and start the development server:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/matthabjan/wordle.git
 cd wordle
 npm install
 npm run dev
@@ -43,6 +43,19 @@ npm run build
 The build output will be in the `dist/` directory.
 
 ### Docker Support
+
+#### Prebuilt Images (Docker Hub)
+
+Multi-arch images (`amd64`, `arm64`) are published on every release:
+
+- [`matthabjan/wordle`](https://hub.docker.com/r/matthabjan/wordle) — the game (nginx, port 8080)
+- [`matthabjan/wordle-leaderboard-api`](https://hub.docker.com/r/matthabjan/wordle-leaderboard-api) — optional leaderboard API (port 3001)
+
+```bash
+docker run -d -p 8080:8080 matthabjan/wordle:latest
+```
+
+Tags: `X.Y.Z` / `X.Y` / `X` / `latest` for releases, `edge` for `main`, `dev` for `development`. Use the same version for both images. See [DOCKER.md](DOCKER.md#prebuilt-images-docker-hub) for a full Traefik/Portainer stack and the release process.
 
 #### Docker Compose (Recommended for Production)
 
