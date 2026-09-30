@@ -1,5 +1,11 @@
 const API_BASE = '/api'
 
+// Sent as a header (not in the URL) so it stays out of access logs, history and
+// referrers. Encoded because header values must be Latin-1.
+const authHeaders = (passphrase: string) => ({
+  Authorization: `Bearer ${encodeURIComponent(passphrase)}`,
+})
+
 const NAME_KEY = 'leaderboardName'
 const PASSPHRASE_KEY = 'leaderboardPassphrase'
 
@@ -52,9 +58,11 @@ export const submitLeaderboardResult = async (params: {
   try {
     await fetch(`${API_BASE}/results`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders(params.identity.passphrase),
+      },
       body: JSON.stringify({
-        passphrase: params.identity.passphrase,
         name: params.identity.name,
         date: params.date,
         guesses: params.guesses,
@@ -84,9 +92,10 @@ export const fetchLeaderboard = async (params: {
     const url = new URL(`${API_BASE}/leaderboard`, window.location.origin)
     url.searchParams.set('date', params.date)
     url.searchParams.set('name', params.identity.name)
-    url.searchParams.set('passphrase', params.identity.passphrase)
 
-    const response = await fetch(url.toString())
+    const response = await fetch(url.toString(), {
+      headers: authHeaders(params.identity.passphrase),
+    })
     if (response.status === 401) return { status: 'unauthorized' }
     if (!response.ok) return { status: 'unavailable' }
 
@@ -106,9 +115,10 @@ export const fetchOverallLeaderboard = async (params: {
       window.location.origin,
     )
     url.searchParams.set('name', params.identity.name)
-    url.searchParams.set('passphrase', params.identity.passphrase)
 
-    const response = await fetch(url.toString())
+    const response = await fetch(url.toString(), {
+      headers: authHeaders(params.identity.passphrase),
+    })
     if (response.status === 401) return { status: 'unauthorized' }
     if (!response.ok) return { status: 'unavailable' }
 
