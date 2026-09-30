@@ -12,6 +12,9 @@
     "test:watch": "vitest",
     "lint": "prettier --check src",
     "fix": "prettier --write src",
+    "release:patch": "npm version patch -m \"chore(release): v%s\"",
+    "release:minor": "npm version minor -m \"chore(release): v%s\"",
+    "release:major": "npm version major -m \"chore(release): v%s\"",
     "prepare": "husky install"
   },
   "dependencies": {

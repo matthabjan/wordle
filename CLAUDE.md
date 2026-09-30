@@ -33,7 +33,9 @@ Security notes for public deploy:
 - Fonts are self-hosted under `public/fonts/` (no Google Fonts).
 - Do not publish port 8080 when behind Traefik.
 
-CI (Node 22): `.github/workflows/lint.yml`, `.github/workflows/test.yml` on `main` and PRs.
+CI (Node 22): `.github/workflows/lint.yml`, `.github/workflows/test.yml` on `main`, `development` and PRs. `.github/workflows/docker.yml` publishes `matthabjan/wordle` + `matthabjan/wordle-leaderboard-api` to Docker Hub (`development` → `:dev`, `main` → `:edge`, tag `vX.Y.Z` → semver + `:latest` + GitHub Release).
+
+Versioning: SemVer from root `package.json`; release via `npm run release:{patch,minor,major}` on `main`, then `git push --follow-tags`. Tag must equal `v` + `package.json` version.
 
 ## Layout
 
