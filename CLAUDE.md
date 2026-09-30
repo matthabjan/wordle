@@ -22,7 +22,7 @@ make up-prod # local prod via docker-compose.prod.yml → :8080
 make health  # container health
 ```
 
-For public Traefik/Portainer deploy: build `wordle:prod`, run your own stack (no host port 8080). See `DOCKER.md`.
+For public Traefik/Portainer deploy: run the Docker Hub images (`matthabjan/wordle`, `matthabjan/wordle-leaderboard-api`, same version) in your own stack (no host port 8080). See `DOCKER.md`.
 
 Leaderboard backend, local dev: `cd server && LEADERBOARD_PASSPHRASE=devsecret npm install && npm start` → `:3001`; `vite.config.ts` proxies `/api` there for `npm run dev`.
 
@@ -33,7 +33,7 @@ Security notes for public deploy:
 - Fonts are self-hosted under `public/fonts/` (no Google Fonts).
 - Do not publish port 8080 when behind Traefik.
 
-CI (Node 22): `.github/workflows/lint.yml`, `.github/workflows/test.yml` on `main`, `development` and PRs. `.github/workflows/docker.yml` publishes `matthabjan/wordle` + `matthabjan/wordle-leaderboard-api` to Docker Hub (`development` → `:dev`, `main` → `:edge`, tag `vX.Y.Z` → semver + `:latest` + GitHub Release).
+CI (Node 22): `.github/workflows/lint.yml`, `.github/workflows/test.yml` (app + `server/` tests) on `main`, `development` and PRs. Dependabot PRs target `development` (majors ignored). `.github/workflows/docker.yml` publishes `matthabjan/wordle` + `matthabjan/wordle-leaderboard-api` to Docker Hub (`development` → `:dev`, `main` → `:edge`, tag `vX.Y.Z` → semver + `:latest` + GitHub Release).
 
 Versioning: SemVer from root `package.json`; release via `npm run release:{patch,minor,major}` on `main`, then `git push --follow-tags`. Tag must equal `v` + `package.json` version.
 
