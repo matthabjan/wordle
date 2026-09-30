@@ -144,6 +144,35 @@ To change application settings (title, description, etc.):
    docker-compose -f docker-compose.prod.yml up -d
    ```
 
+## Prebuilt Images (Docker Hub)
+
+CI (`.github/workflows/docker.yml`) publishes multi-arch (`amd64`, `arm64`) images:
+
+- `matthabjan/wordle` — app (nginx, port 8080)
+- `matthabjan/wordle-leaderboard-api` — optional leaderboard API (port 3001)
+
+| Tag                           | Source                       |
+| ----------------------------- | ---------------------------- |
+| `X.Y.Z`, `X.Y`, `X`, `latest` | git tag `vX.Y.Z` (release)   |
+| `edge`                        | latest push to `main`        |
+| `dev`                         | latest push to `development` |
+| `sha-<short>`                 | every published commit       |
+
+Use them in place of `wordle:prod` / `wordle-leaderboard-api:prod` in the stacks below, e.g. `image: matthabjan/wordle:2`.
+Prebuilt images bake in `VITE_GAME_NAME` / `VITE_GAME_DESCRIPTION` from the GitHub repository variables of the same name (default `Wordle` / `Wordle auf Deutsch`); build locally for other values.
+
+### Releasing
+
+Branch flow: feature → `development` → `main`. On `main`:
+
+```bash
+npm run release:patch   # or release:minor / release:major — bumps package.json, commits, tags vX.Y.Z
+git push --follow-tags
+```
+
+The tag push runs lint + tests, checks the tag matches `package.json`, pushes the images and creates a GitHub Release.
+One-time setup: repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (Docker Hub access token, Read & Write).
+
 ## SSL/TLS Setup
 
 ### Option 1: Traefik / Portainer (Recommended for home servers)
