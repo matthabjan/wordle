@@ -9,6 +9,30 @@ const PORT = Number(process.env.PORT) || 3001
 const DB_PATH = process.env.DB_PATH || './leaderboard.db'
 const PASSPHRASE = process.env.LEADERBOARD_PASSPHRASE
 
+const envInt = (name, fallback) => {
+  const raw = process.env[name]?.trim()
+  if (!raw) return fallback
+  const value = Number(raw)
+  return Number.isInteger(value) && value >= 0 ? value : fallback
+}
+
+// Reverse proxies whose X-Forwarded-For is believed, so the failed-attempt limiter
+// keys on the real client instead of the proxy's address. Comma-separated IPs,
+// CIDR ranges or keywords (e.g. `uniquelocal` for Docker-internal proxies).
+// Unset = use the socket peer. Hop counts are not supported.
+const TRUST_PROXY = process.env.TRUST_PROXY?.trim() || false
+// Failed passphrase attempts per client within the window before answering 429.
+// 0 disables the limiter.
+const AUTH_MAX_FAILURES = envInt('AUTH_MAX_FAILURES', 10)
+const AUTH_WINDOW_MS = envInt('AUTH_WINDOW_SECONDS', 900) * 1000
+// Older cached clients still send the passphrase in the query string / JSON body.
+// Set ALLOW_LEGACY_AUTH=false once every client sends the Authorization header.
+const ALLOW_LEGACY_AUTH = process.env.ALLOW_LEGACY_AUTH !== 'false'
+const MAX_TRACKED_CLIENTS = 10_000
+
+const redactUrl = (url) =>
+  String(url).replace(/([?&]passphrase=)[^&]*/gi, '$1[redacted]')
+
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 const isValidName = (name) =>
@@ -24,6 +48,10 @@ export const buildApp = ({
   dbPath = DB_PATH,
   passphrase = PASSPHRASE,
   logger = true,
+  trustProxy = TRUST_PROXY,
+  maxFailures = AUTH_MAX_FAILURES,
+  windowMs = AUTH_WINDOW_MS,
+  allowLegacyAuth = ALLOW_LEGACY_AUTH,
 } = {}) => {
   if (!passphrase) {
     throw new Error('LEADERBOARD_PASSPHRASE env var is required')
@@ -89,7 +117,91 @@ export const buildApp = ({
     return timingSafeEqual(a, b)
   }
 
-  const app = Fastify({ logger })
+  // Failed attempts per client, in memory only (resets on restart).
+  const failures = new Map()
+
+  const blockedForMs = (ip, now) => {
+    const entry = failures.get(ip)
+    if (!entry) return 0
+    if (entry.resetAt <= now) {
+      failures.delete(ip)
+      return 0
+    }
+    return entry.count >= maxFailures ? entry.resetAt - now : 0
+  }
+
+  const recordFailure = (ip, now) => {
+    const entry = failures.get(ip)
+    if (entry && entry.resetAt > now) {
+      entry.count += 1
+      return
+    }
+    if (failures.size >= MAX_TRACKED_CLIENTS) {
+      for (const [key, value] of failures) {
+        if (value.resetAt <= now) failures.delete(key)
+      }
+      while (failures.size >= MAX_TRACKED_CLIENTS) {
+        failures.delete(failures.keys().next().value)
+      }
+    }
+    failures.set(ip, { count: 1, resetAt: now + windowMs })
+  }
+
+  // Preferred: `Authorization: Bearer <encodeURIComponent(passphrase)>` (kept out of
+  // URLs and access logs; encoded because header values must be Latin-1).
+  const readPassphrase = (request) => {
+    const header = request.headers.authorization
+    if (typeof header === 'string') {
+      const match = /^Bearer (.+)$/i.exec(header)
+      if (!match) return undefined
+      try {
+        return decodeURIComponent(match[1])
+      } catch {
+        return undefined
+      }
+    }
+    if (!allowLegacyAuth) return undefined
+    return request.method === 'POST'
+      ? request.body?.passphrase
+      : request.query?.passphrase
+  }
+
+  // Sends the error response itself and returns false when the caller isn't allowed.
+  const authorize = (request, reply) => {
+    const now = Date.now()
+    if (maxFailures > 0) {
+      const retryAfterMs = blockedForMs(request.ip, now)
+      if (retryAfterMs > 0) {
+        reply
+          .header('Retry-After', Math.ceil(retryAfterMs / 1000))
+          .code(429)
+          .send({ error: 'too_many_attempts' })
+        return false
+      }
+    }
+    if (isValidPassphrase(readPassphrase(request))) return true
+    if (maxFailures > 0) recordFailure(request.ip, now)
+    reply.code(401).send({ error: 'invalid_passphrase' })
+    return false
+  }
+
+  const app = Fastify({
+    trustProxy,
+    // Mirrors Fastify's default request log, minus any passphrase in the query.
+    logger: logger
+      ? {
+          serializers: {
+            req: (req) => ({
+              method: req.method,
+              url: redactUrl(req.url),
+              host: req.host,
+              remoteAddress: req.ip,
+              remotePort: req.socket?.remotePort,
+            }),
+          },
+        }
+      : false,
+  })
 
   app.addHook('onClose', async () => {
     db.close()
@@ -98,17 +210,10 @@ export const buildApp = ({
   app.get('/api/health', async () => ({ ok: true }))
 
   app.post('/api/results', async (request, reply) => {
-    const {
-      passphrase: candidate,
-      name,
-      date,
-      guesses,
-      won,
-    } = request.body ?? {}
+    if (!authorize(request, reply)) return reply
 
-    if (!isValidPassphrase(candidate)) {
-      return reply.code(401).send({ error: 'invalid_passphrase' })
-    }
+    const { name, date, guesses, won } = request.body ?? {}
+
     if (
       !isValidName(name) ||
       !DATE_RE.test(date ?? '') ||
@@ -130,11 +235,9 @@ export const buildApp = ({
   })
 
   app.get('/api/leaderboard', async (request, reply) => {
-    const { passphrase: candidate, name, date } = request.query ?? {}
+    if (!authorize(request, reply)) return reply
 
-    if (!isValidPassphrase(candidate)) {
-      return reply.code(401).send({ error: 'invalid_passphrase' })
-    }
+    const { name, date } = request.query ?? {}
     if (!isValidName(name) || !DATE_RE.test(date ?? '')) {
       return reply.code(400).send({ error: 'invalid_payload' })
     }
@@ -161,11 +264,9 @@ export const buildApp = ({
   })
 
   app.get('/api/leaderboard/overall', async (request, reply) => {
-    const { passphrase: candidate, name } = request.query ?? {}
+    if (!authorize(request, reply)) return reply
 
-    if (!isValidPassphrase(candidate)) {
-      return reply.code(401).send({ error: 'invalid_passphrase' })
-    }
+    const { name } = request.query ?? {}
     if (!isValidName(name)) {
       return reply.code(400).send({ error: 'invalid_payload' })
     }
