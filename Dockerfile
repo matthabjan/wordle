@@ -16,6 +16,7 @@ RUN npm run build
 FROM nginx:1.31-alpine AS prod
 COPY docker/etc/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY docker/etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
+COPY docker/etc/nginx/snippets/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY --from=prod_builder /app/dist /usr/share/nginx/html
 COPY docker/build_system.sh .
 RUN chmod +x build_system.sh && \
