@@ -1,8 +1,8 @@
 FROM node:22-alpine AS deps
 RUN apk add --no-cache python3 make g++
 WORKDIR /app
-COPY package.json ./
-RUN npm install --omit=dev
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 
 FROM node:22-alpine AS prod
 WORKDIR /app

@@ -1,4 +1,5 @@
-FROM node:22-alpine AS node_modules
+# Build natively on the build host: the bundle is static, so arm64 images need no emulated npm/vite run.
+FROM --platform=$BUILDPLATFORM node:22-alpine AS node_modules
 WORKDIR /app
 COPY package-lock.json package.json ./
 RUN npm ci
