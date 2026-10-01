@@ -99,7 +99,7 @@ jobs:
             type=semver,pattern={{major}}
             type=raw,value=dev,enable=${{ github.ref == 'refs/heads/development' }}
             type=raw,value=edge,enable=${{ github.ref == 'refs/heads/main' }}
-            type=sha,prefix=sha-,enable=${{ github.event_name != 'pull_request' }}
+            type=sha,prefix=sha-,enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
             type=ref,event=pr
 
       - uses: docker/build-push-action@v7
