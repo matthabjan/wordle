@@ -1,6 +1,6 @@
 {
   "name": "wordle-leaderboard-api",
-  "version": "2.3.3",
+  "version": "2.4.0",
   "private": true,
   "type": "module",
   "description": "Lightweight daily and overall leaderboard API — anyone with the passphrase can participate.",
