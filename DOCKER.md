@@ -166,11 +166,11 @@ Prebuilt images bake in `VITE_GAME_NAME` / `VITE_GAME_DESCRIPTION` from the GitH
 Branch flow: feature → `development` → `main`. On `main`:
 
 ```bash
-npm run release:patch   # or release:minor / release:major — bumps package.json, commits, tags vX.Y.Z
+npm run release:patch   # or release:minor / release:major — bumps package.json and server/package.json, commits, tags vX.Y.Z
 git push --follow-tags
 ```
 
-Without a local checkout: edit `version` in `package.json` on GitHub, then **Releases → Draft a new release** with a new tag `vX.Y.Z` on `main`.
+Without a local checkout: edit `version` in **both** `package.json` and `server/package.json` on GitHub (CI fails if they differ), then **Releases → Draft a new release** with a new tag `vX.Y.Z` on `main`.
 
 The tag push runs lint + tests (app and `server/`), checks the tag matches `package.json`, pushes the images, creates a GitHub Release and syncs `README.md` to both Docker Hub repository descriptions.
 One-time setup: repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (Docker Hub access token, Read, Write & Delete — Delete is required to update descriptions).
@@ -317,7 +317,10 @@ Let Caddy/Traefik set HSTS; the app image already sends CSP and related headers.
 
 `server/` is a small Fastify + SQLite service that powers the daily and overall leaderboard folded into the Stats modal. It's entirely optional — the core game works identically with or without it.
 
-- **Auth**: one shared `LEADERBOARD_PASSPHRASE` env var; anyone who knows it enters it once alongside a display name, cached in `localStorage` on their device. There's no per-person account — the passphrase is the only gate.
+- **Auth**: one shared `LEADERBOARD_PASSPHRASE` env var; anyone who knows it enters it once alongside a display name, cached in `localStorage` on their device. There's no per-person account — the passphrase is the only gate. The app sends it as `Authorization: Bearer <encodeURIComponent(passphrase)>`, so it stays out of URLs and access logs.
+- **Brute-force protection**: after 10 failed passphrase attempts from one client within 15 minutes the API answers `429` (with `Retry-After`) until the window ends. Tunable via `AUTH_MAX_FAILURES` (`0` disables) and `AUTH_WINDOW_SECONDS`. State is in memory only.
+- **Client address behind proxies**: by default the limiter keys on the socket peer, which behind nginx/Traefik is the proxy — all users then share one bucket. To key on the real client set `TRUST_PROXY` to the address ranges of the proxies you control (comma-separated IPs/CIDRs or keywords, e.g. `uniquelocal` for Docker-internal proxies). Only list proxies you control, otherwise clients can spoof `X-Forwarded-For`. Hop counts are not supported.
+- **Legacy clients**: older app versions sent the passphrase in the query string / JSON body. That is still accepted (and redacted from the API log) until you set `ALLOW_LEGACY_AUTH=false`; do so once every device has loaded the new version. Note nginx/Traefik access logs record query strings, so old requests may still be visible there until then.
 - **Data**: one SQLite file (`/data/leaderboard.db` inside the container), one row per `(date, name)`, kept forever — never deleted or overwritten across days, only upserted for the same person on the same day.
 - **Overall ranking**: calculated by the server from those daily rows. A win awards 6 points for one guess down to 1 point for six guesses; a loss awards 0. Ties are resolved by wins, then lower average guesses.
 - **Reveal**: a viewer only sees full guess grids for others once they've submitted their own result for that day; until then they see just name + guess count.

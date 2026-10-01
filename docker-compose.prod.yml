@@ -57,6 +57,8 @@ services:
       - LEADERBOARD_PASSPHRASE=${LEADERBOARD_PASSPHRASE}
       - PORT=3001
       - DB_PATH=/data/leaderboard.db
+      - TRUST_PROXY=${TRUST_PROXY:-}
+      - ALLOW_LEGACY_AUTH=${ALLOW_LEGACY_AUTH:-true}
     volumes:
       - leaderboard-data:/data
     healthcheck:

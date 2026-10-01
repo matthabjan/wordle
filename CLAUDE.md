@@ -35,7 +35,7 @@ Security notes for public deploy:
 
 CI (Node 22): `.github/workflows/lint.yml`, `.github/workflows/test.yml` (app + `server/` tests) on `main`, `development` and PRs. Dependabot PRs target `development` (majors ignored). `.github/workflows/docker.yml` publishes `matthabjan/wordle` + `matthabjan/wordle-leaderboard-api` to Docker Hub (`development` → `:dev`, `main` → `:edge`, tag `vX.Y.Z` → semver + `:latest` + GitHub Release).
 
-Versioning: SemVer from root `package.json`; release via `npm run release:{patch,minor,major}` on `main`, then `git push --follow-tags`. Tag must equal `v` + `package.json` version.
+Versioning: SemVer from root `package.json`; `server/package.json` must carry the same version (the `release:*` scripts sync it, CI checks it); release via `npm run release:{patch,minor,major}` on `main`, then `git push --follow-tags`. Tag must equal `v` + `package.json` version.
 
 ## Layout
 
@@ -81,7 +81,7 @@ server/                   # optional Fastify+SQLite leaderboard API (see DOCKER.
 ## Leaderboard (optional, do not break)
 
 - Lives in `src/lib/leaderboard.ts` + `src/components/stats/Leaderboard.tsx` (folded into `StatsModal`), backed by `server/` (Fastify + SQLite) and proxied same-origin at `/api/*` (see `docker/etc/nginx/conf.d/default.conf`).
-- Gate is a single shared passphrase (`LEADERBOARD_PASSPHRASE` env var on the server) — no per-user accounts. Anyone who knows it can join under any name; everyone else just plays without it.
+- Gate is a single shared passphrase (`LEADERBOARD_PASSPHRASE` env var on the server) — no per-user accounts. Anyone who knows it can join under any name; everyone else just plays without it. The client sends it as `Authorization: Bearer <encodeURIComponent(passphrase)>` (never in the URL); the server still accepts the legacy query/body form unless `ALLOW_LEGACY_AUTH=false`, and answers `429` after too many failed attempts per client (`AUTH_MAX_FAILURES`, `AUTH_WINDOW_SECONDS`, `TRUST_PROXY` — see `DOCKER.md`).
 - Identity (`leaderboardName` / `leaderboardPassphrase`) is cached in `localStorage`; distinct keys from the core game state, additive only.
 - Reveal is gated server-side: a viewer only receives other players' guess grids once they've submitted their own result for that date (see `GET /api/leaderboard` in `server/index.js`).
 - Overall rankings come from `GET /api/leaderboard/overall` and are derived server-side from daily rows: wins score 6 points for one guess down to 1 point for six guesses; losses score 0.

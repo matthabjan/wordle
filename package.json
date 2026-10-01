@@ -1,6 +1,6 @@
 {
   "name": "wordle",
-  "version": "2.3.3",
+  "version": "2.4.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,6 +15,7 @@
     "release:patch": "npm version patch -m \"chore(release): v%s\"",
     "release:minor": "npm version minor -m \"chore(release): v%s\"",
     "release:major": "npm version major -m \"chore(release): v%s\"",
+    "version": "npm --prefix server version $npm_package_version --no-git-tag-version --allow-same-version && git add server/package.json server/package-lock.json",
     "prepare": "husky install"
   },
   "dependencies": {
