@@ -35,7 +35,7 @@ Security notes for public deploy:
 
 CI (Node 22): `.github/workflows/lint.yml`, `.github/workflows/test.yml` (app + `server/` tests) on `main`, `development` and PRs. Dependabot PRs target `development` (majors ignored). `.github/workflows/docker.yml` publishes `matthabjan/wordle` + `matthabjan/wordle-leaderboard-api` to Docker Hub (`development` → `:dev`, `main` → `:edge`, tag `vX.Y.Z` → semver + `:latest` + GitHub Release).
 
-Versioning: SemVer from root `package.json`; release via `npm run release:{patch,minor,major}` on `main`, then `git push --follow-tags`. Tag must equal `v` + `package.json` version.
+Versioning: SemVer from root `package.json`; `server/package.json` must carry the same version (the `release:*` scripts sync it, CI checks it); release via `npm run release:{patch,minor,major}` on `main`, then `git push --follow-tags`. Tag must equal `v` + `package.json` version.
 
 ## Layout
 

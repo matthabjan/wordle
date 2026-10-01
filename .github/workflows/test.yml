@@ -19,6 +19,14 @@ jobs:
           node-version: '22'
           cache: 'npm'
       - run: npm ci
+      - name: Server version matches app version
+        run: |
+          app="$(node -p "require('./package.json').version")"
+          srv="$(node -p "require('./server/package.json').version")"
+          if [ "$app" != "$srv" ]; then
+            echo "::error::server/package.json ($srv) must match package.json ($app)"
+            exit 1
+          fi
       - run: npm test
 
   server-test:

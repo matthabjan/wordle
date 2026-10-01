@@ -166,11 +166,11 @@ Prebuilt images bake in `VITE_GAME_NAME` / `VITE_GAME_DESCRIPTION` from the GitH
 Branch flow: feature → `development` → `main`. On `main`:
 
 ```bash
-npm run release:patch   # or release:minor / release:major — bumps package.json, commits, tags vX.Y.Z
+npm run release:patch   # or release:minor / release:major — bumps package.json and server/package.json, commits, tags vX.Y.Z
 git push --follow-tags
 ```
 
-Without a local checkout: edit `version` in `package.json` on GitHub, then **Releases → Draft a new release** with a new tag `vX.Y.Z` on `main`.
+Without a local checkout: edit `version` in **both** `package.json` and `server/package.json` on GitHub (CI fails if they differ), then **Releases → Draft a new release** with a new tag `vX.Y.Z` on `main`.
 
 The tag push runs lint + tests (app and `server/`), checks the tag matches `package.json`, pushes the images, creates a GitHub Release and syncs `README.md` to both Docker Hub repository descriptions.
 One-time setup: repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (Docker Hub access token, Read, Write & Delete — Delete is required to update descriptions).
