@@ -156,7 +156,7 @@ CI (`.github/workflows/docker.yml`) publishes multi-arch (`amd64`, `arm64`) imag
 | `X.Y.Z`, `X.Y`, `X`, `latest` | git tag `vX.Y.Z` (release)   |
 | `edge`                        | latest push to `main`        |
 | `dev`                         | latest push to `development` |
-| `sha-<short>`                 | every published commit       |
+| `sha-<short>`                 | every `main` push and release |
 
 Use them in place of `wordle:prod` / `wordle-leaderboard-api:prod` in the stacks below, e.g. `image: matthabjan/wordle:2`.
 Prebuilt images bake in `VITE_GAME_NAME` / `VITE_GAME_DESCRIPTION` from the GitHub repository variables of the same name (default `Wordle` / `Wordle auf Deutsch`); build locally for other values.
