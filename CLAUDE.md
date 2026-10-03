@@ -4,17 +4,6 @@ German Wordle (Vite + React 18 + TypeScript + Tailwind 4). Client-only PWA; game
 
 ## Commands
 
-```bash
-npm install # install deps
-npm run dev # / npm start → http://localhost:5173
-npm test # Vitest one-shot
-npm run test:watch # Vitest watch mode
-npm run build # production build → dist/
-npm run preview # preview production build
-npm run lint # prettier --check src
-npm run fix # prettier --write src
-```
-
 Docker (see `DOCKER.md` / `Makefile`):
 
 ```bash
@@ -37,33 +26,10 @@ CI (Node 22): `.github/workflows/lint.yml`, `.github/workflows/test.yml` (app + 
 
 Versioning: SemVer from root `package.json`; `server/package.json` must carry the same version (the `release:*` scripts sync it, CI checks it); release via `npm run release:{patch,minor,major}` on `main`, then `git push --follow-tags`. Tag must equal `v` + `package.json` version.
 
-## Layout
-
-```
-src/
-  App.tsx                 # shell, modals, composition
-  hooks/                  # useGameState, useTheme, useWordOfDay
-  components/
-    alerts/ grid/ keyboard/ modals/ stats/
-  constants/
-    settings.ts           # MAX_WORD_LENGTH, MAX_CHALLENGES, timings
-    strings.ts            # German UI copy (and VITE_GAME_NAME)
-    wordlist.ts           # daily solutions (~882 words)
-    validGuesses.ts       # accepted guesses (~2411 words)
-  context/AlertContext.tsx
-  lib/
-    words.ts              # solution-of-day, validation, hard mode
-    statuses.ts           # letter status (correct/present/absent)
-    stats.ts localStorage.ts share.ts haptics.ts leaderboard.ts
-docker/                   # nginx configs for prod image
-server/                   # optional Fastify+SQLite leaderboard API (see DOCKER.md)
-```
-
 ## Conventions
 
 - **Language**: UI strings are German (`src/constants/strings.ts`). Keep new copy German unless changing locale intentionally.
 - **Characters**: A–Z only. No umlauts/ß in word lists or guesses (universal keyboard). Words are lowercase in lists; compare case-insensitively.
-- **Formatting**: Prettier — `singleQuote: true`, `semi: false`. Husky + lint-staged run Prettier on staged `src/**/*.{ts,tsx,js,jsx,css,md}`.
 - **Components**: Functional React components; Tailwind for styling; Headless UI for modals; Heroicons for icons.
 - **Imports**: Prefer relative imports as elsewhere in `src/`.
 - **Types**: TypeScript `strict: true`. Do not weaken `tsconfig` without cause.
