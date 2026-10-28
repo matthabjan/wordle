@@ -2,7 +2,7 @@
  * This list contains all valid 5-letter German words for Wordle
  *
  * Imported and normalized German word list
- * Total words: 2411
+ * Total words: 2415
  */
 
 export const VALID_GUESSES = [
@@ -30,6 +30,7 @@ export const VALID_GUESSES = [
   'adlig',
   'admin',
   'aerob',
+  'affen',
   'affig',
   'affin',
   'affix',
@@ -725,6 +726,7 @@ export const VALID_GUESSES = [
   'gunst',
   'guoyu',
   'gurke',
+  'gurte',
   'gusto',
   'gypsy',
   'gyros',
@@ -1357,6 +1359,7 @@ export const VALID_GUESSES = [
   'molly',
   'monat',
   'monem',
+  'moore',
   'moped',
   'moral',
   'mosel',
@@ -2338,6 +2341,7 @@ export const VALID_GUESSES = [
   'wippe',
   'wisch',
   'witwe',
+  'witze',
   'wobei',
   'woche',
   'wodka',
