@@ -103,7 +103,7 @@ function App() {
     <div className="flex min-h-[100dvh] flex-col bg-nature-stone-50 pt-[max(0.5rem,env(safe-area-inset-top))] pb-[max(0.5rem,env(safe-area-inset-bottom))] transition-colors duration-300 dark:bg-nature-stone-900">
       <div className="game-column flex min-h-0 flex-1 flex-col">
         <header className="mt-3 mb-4 flex w-full items-center gap-1">
-          <h1 className="min-w-0 grow truncate font-display text-[clamp(1.5rem,6vw,2.25rem)] font-bold tracking-tight text-nature-stone-900 dark:text-nature-stone-50">
+          <h1 className="min-w-0 grow truncate font-display text-[clamp(1rem,10vw-15px,1.75rem)] font-bold tracking-tight text-nature-stone-900 dark:text-nature-stone-50">
             {GAME_TITLE}
           </h1>
           <button

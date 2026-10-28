@@ -1,4 +1,4 @@
-export const GAME_TITLE = import.meta.env.VITE_GAME_NAME || 'Wordle'
+export const GAME_TITLE = import.meta.env.VITE_GAME_NAME || 'German Wordle'
 
 export const WIN_MESSAGES = [
   'Gut gemacht!',

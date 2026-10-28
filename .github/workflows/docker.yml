@@ -111,7 +111,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            VITE_GAME_NAME=${{ vars.VITE_GAME_NAME || 'Wordle' }}
+            VITE_GAME_NAME=${{ vars.VITE_GAME_NAME || 'German Wordle' }}
             VITE_GAME_DESCRIPTION=${{ vars.VITE_GAME_DESCRIPTION || 'Wordle auf Deutsch' }}
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}

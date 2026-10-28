@@ -55,7 +55,7 @@ Edit `.env.docker` to configure your deployment:
 
 ```bash
 WORDLE_PORT=8080
-VITE_GAME_NAME=Wordle
+VITE_GAME_NAME=German Wordle
 VITE_GAME_DESCRIPTION=Wordle auf Deutsch
 LEADERBOARD_PASSPHRASE=change-me
 ```
@@ -159,7 +159,7 @@ CI (`.github/workflows/docker.yml`) publishes multi-arch (`amd64`, `arm64`) imag
 | `sha-<short>`                 | every `main` push and release |
 
 Use them in place of `wordle:prod` / `wordle-leaderboard-api:prod` in the stacks below, e.g. `image: matthabjan/wordle:2`.
-Prebuilt images bake in `VITE_GAME_NAME` / `VITE_GAME_DESCRIPTION` from the GitHub repository variables of the same name (default `Wordle` / `Wordle auf Deutsch`); build locally for other values.
+Prebuilt images bake in `VITE_GAME_NAME` / `VITE_GAME_DESCRIPTION` from the GitHub repository variables of the same name (default `German Wordle` / `Wordle auf Deutsch`); build locally for other values.
 
 ### Releasing
 
@@ -187,7 +187,7 @@ Run the [prebuilt images](#prebuilt-images-docker-hub) from your own Portainer/T
 
 ```bash
 docker build --target prod -t wordle:prod \
-  --build-arg VITE_GAME_NAME="Wordle" \
+  --build-arg VITE_GAME_NAME="German Wordle" \
   --build-arg VITE_GAME_DESCRIPTION="Wordle auf Deutsch" \
   .
 

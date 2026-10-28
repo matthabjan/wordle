@@ -32,7 +32,7 @@ export default defineConfig({
       ],
       manifest: {
         short_name: 'Wordle',
-        name: 'Wordle',
+        name: 'German Wordle',
         description: 'Wordle auf Deutsch',
         start_url: '.',
         display: 'standalone',

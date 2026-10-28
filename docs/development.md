@@ -27,7 +27,7 @@ LEADERBOARD_PASSPHRASE=devsecret npm start   # http://localhost:3001
 
 | Variable | Purpose | Default in `.env.example` |
 |---|---|---|
-| `VITE_GAME_NAME` | Title in the header, share text and document title | `Wordle` |
+| `VITE_GAME_NAME` | Title in the header and share text | `German Wordle` |
 | `VITE_GAME_DESCRIPTION` | Meta description | `Wordle auf Deutsch` |
 
 These values are baked into the static bundle at build time. Runtime settings for the leaderboard are listed in [Leaderboard → Configuration](leaderboard.md#configuration).
