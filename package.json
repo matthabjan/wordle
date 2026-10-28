@@ -15,7 +15,7 @@
     "release:patch": "npm version patch -m \"chore(release): v%s\"",
     "release:minor": "npm version minor -m \"chore(release): v%s\"",
     "release:major": "npm version major -m \"chore(release): v%s\"",
-    "version": "npm --prefix server version $npm_package_version --no-git-tag-version --allow-same-version && git add server/package.json server/package-lock.json",
+    "version": "npm --prefix server version $npm_package_version --no-git-tag-version --allow-same-version && node -e \"const fs=require('fs'),v=process.env.npm_package_version.split('.').slice(0,2).join('.');fs.writeFileSync('README.md',fs.readFileSync('README.md','utf8').replace(/German Edition \\d+\\.\\d+/,'German Edition '+v))\" && git add server/package.json server/package-lock.json README.md",
     "prepare": "husky install"
   },
   "dependencies": {
