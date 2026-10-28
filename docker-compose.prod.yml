@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
       target: prod
       args:
-        VITE_GAME_NAME: ${VITE_GAME_NAME:-German Wordle}
+        VITE_GAME_NAME: ${VITE_GAME_NAME:-Wordle}
         VITE_GAME_DESCRIPTION: ${VITE_GAME_DESCRIPTION:-Wordle auf Deutsch}
     image: wordle:prod
     container_name: wordle-app

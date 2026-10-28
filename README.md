@@ -1,13 +1,13 @@
-# German Wordle
+# Wordle
 
-**Edition 2.0**
+**German Edition 2.4**
 
 [![Test](https://github.com/matthabjan/wordle/actions/workflows/test.yml/badge.svg)](https://github.com/matthabjan/wordle/actions/workflows/test.yml)
 [![Lint](https://github.com/matthabjan/wordle/actions/workflows/lint.yml/badge.svg)](https://github.com/matthabjan/wordle/actions/workflows/lint.yml)
 [![Docker](https://github.com/matthabjan/wordle/actions/workflows/docker.yml/badge.svg)](https://hub.docker.com/r/matthabjan/wordle)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-German Wordle is a daily word puzzle in the spirit of Wordle: guess the five-letter word in six tries. It's a self-hostable Progressive Web App (PWA) with no ads, no tracking and no accounts. Your progress stays on your device. An optional leaderboard, shared by passphrase, lets friends compare results.
+Wordle – German Edition is a daily word puzzle in the spirit of Wordle: guess the five-letter word in six tries. It's a self-hostable Progressive Web App (PWA) with no ads, no tracking and no accounts. Your progress stays on your device. An optional leaderboard, shared by passphrase, lets friends compare results.
 
 <p align="center">
   <img src="docs/screenshots/game.png" alt="Game board with three guesses and colour-coded keyboard" width="260">

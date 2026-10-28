@@ -27,10 +27,10 @@ LEADERBOARD_PASSPHRASE=devsecret npm start   # http://localhost:3001
 
 | Variable | Purpose | Default in `.env.example` |
 |---|---|---|
-| `VITE_GAME_NAME` | Title in the header and share text | `German Wordle` |
+| `VITE_GAME_NAME` | Title in the header and share text | `Wordle` |
 | `VITE_GAME_DESCRIPTION` | Meta description | `Wordle auf Deutsch` |
 
-These values are baked into the static bundle at build time. Runtime settings for the leaderboard are listed in [Leaderboard → Configuration](leaderboard.md#configuration).
+These values are baked into the static bundle at build time. The subtitle under the title (*German Edition 2.4*) is not configurable: it comes from the `package.json` version (major.minor) via `__APP_VERSION__` in `vite.config.ts`. Runtime settings for the leaderboard are listed in [Leaderboard → Configuration](leaderboard.md#configuration).
 
 ## Scripts
 
@@ -146,4 +146,4 @@ npm run release:patch     # or release:minor / release:major
 git push --follow-tags    # tag vX.Y.Z triggers the Docker release
 ```
 
-The `release:*` scripts keep both versions in sync. The tag must be `v` followed by the `package.json` version.
+The `release:*` scripts keep both versions in sync and update the *German Edition X.Y* line in `README.md`. The tag must be `v` followed by the `package.json` version.
