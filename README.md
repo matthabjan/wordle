@@ -1,225 +1,80 @@
-# Wordle - German Edition
+# Wordle – German Edition
 
-A modern German implementation of the popular Wordle game. This project is originally forked from [woertchen](https://github.com/diondiondion/woertchen) and features a curated German word list with enhanced accessibility and universal keyboard support.
+[![Test](https://github.com/matthabjan/wordle/actions/workflows/test.yml/badge.svg)](https://github.com/matthabjan/wordle/actions/workflows/test.yml)
+[![Lint](https://github.com/matthabjan/wordle/actions/workflows/lint.yml/badge.svg)](https://github.com/matthabjan/wordle/actions/workflows/lint.yml)
+[![Docker](https://github.com/matthabjan/wordle/actions/workflows/docker.yml/badge.svg)](https://hub.docker.com/r/matthabjan/wordle)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+A German daily word puzzle in the spirit of Wordle: guess the five-letter word in six tries. It's a self-hostable Progressive Web App (PWA) with no ads, no tracking and no accounts. Your progress stays on your device. An optional leaderboard, shared by passphrase, lets friends compare results.
+
+<p align="center">
+  <img src="docs/screenshots/game.png" alt="Game board with three guesses and colour-coded keyboard" width="260">
+  &nbsp;
+  <img src="docs/screenshots/stats-leaderboard.png" alt="Statistics and daily leaderboard in dark mode" width="260">
+  &nbsp;
+  <img src="docs/screenshots/settings.png" alt="Settings: hard mode, dark mode, high contrast" width="260">
+</p>
 
 ## Features
 
-- **Curated German Words** - High-quality word list
-- **Universal Keyboard Support** - Standard A-Z layout works on any keyboard (no special characters required)
-- **Cursor-based editing** - Tap any letter in the current row to change it
-- **Modern React UI** - Built with Vite, React 18, TypeScript, and Tailwind CSS 4
-- **Progressive Web App** - Install and play offline; tuned for a native-app feel on iOS/Android home screens (status bar, splash, no tap-highlight flash)
-- **Dark Mode & High-Contrast Mode** - Comfortable gameplay in any lighting, plus a colorblind-friendly palette
-- **Hard Mode** - Optional challenge mode that enforces reusing revealed hints
-- **Haptic Feedback** - Subtle vibration on key actions (skipped under reduced-motion)
-- **Statistics Tracking** - Track your progress and winning streaks
-- **Daily & Overall Leaderboard (optional)** - Passphrase-gated comparison with anyone else who knows it; self-hosted, no accounts, fails silently if not deployed — see [Leaderboard](#leaderboard-optional)
-- **Share Results** - Native share or clipboard, with a spoiler variant for close friends
-- **Mobile-first Design** - Optimized for one-handed phone play
+- **Curated German word lists**: 882 daily solutions and 2,340 accepted guesses. All entries are singular words written with A–Z only (no plurals, slang or English words).
+- **Universal keyboard**: umlauts and ß are spelled out (`ä → ae`, `ß → ss`), so any keyboard works.
+- **Edit with the cursor**: tap any letter in the current row to overwrite it.
+- **Hard mode**: every guess must use the hints already revealed.
+- **Dark mode and high contrast**: includes a colour-blind-friendly palette.
+- **Statistics**: tracks streaks and the distribution of guesses per game, stored locally.
+- **Sharing**: share via the system share sheet or the clipboard, with an optional spoiler version for friends.
+- **Installable PWA**: works offline and feels native on iOS and Android home screens.
+- **Optional leaderboard**: daily and all-time rankings for everyone who knows a shared passphrase. Grids only unlock once you've finished the word yourself, and the game is unaffected if the backend is down.
 
-## Quick Start
+## Quick start
 
-### Run Locally
-
-Clone the repository and start the development server:
+**Play locally** (Node.js 22+):
 
 ```bash
 git clone https://github.com/matthabjan/wordle.git
 cd wordle
 npm install
-npm run dev
+npm run dev          # → http://localhost:5173
 ```
 
-The app will open at [http://localhost:5173](http://localhost:5173)
-
-### Build for Production
-
-Create an optimized production build:
+**Run with Docker** (prebuilt multi-arch images):
 
 ```bash
-npm run build
+docker run -d -p 8080:8080 matthabjan/wordle:latest   # → http://localhost:8080
 ```
 
-The build output will be in the `dist/` directory.
-
-### Docker Support
-
-#### Prebuilt Images (Docker Hub)
-
-Multi-arch images (`amd64`, `arm64`) are published on every release:
-
-- [`matthabjan/wordle`](https://hub.docker.com/r/matthabjan/wordle) — the game (nginx, port 8080)
-- [`matthabjan/wordle-leaderboard-api`](https://hub.docker.com/r/matthabjan/wordle-leaderboard-api) — optional leaderboard API (port 3001)
+**With the leaderboard** (Docker Compose):
 
 ```bash
-docker run -d -p 8080:8080 matthabjan/wordle:latest
+cp .env.docker.example .env.docker   # set LEADERBOARD_PASSPHRASE
+make up-prod                          # app + leaderboard API → http://localhost:8080
 ```
 
-Tags: `X.Y.Z` / `X.Y` / `X` / `latest` for releases, `edge` for `main`, `dev` for `development`. Use the same version for both images. See [DOCKER.md](DOCKER.md#prebuilt-images-docker-hub) for a full Traefik/Portainer stack and the release process.
+## Documentation
 
-#### Docker Compose (Recommended for Production)
+| Guide | Contents |
+|---|---|
+| [Development](docs/development.md) | Setup, scripts, project structure, architecture, testing, CI, releases |
+| [Word lists](docs/word-lists.md) | Rules for solutions and guesses, the daily calendar, how to edit the lists safely |
+| [Leaderboard](docs/leaderboard.md) | How it works, scoring, API reference, configuration |
+| [Deployment (Docker)](DOCKER.md) | Images, Compose, Traefik/Portainer, TLS, backups, troubleshooting |
 
-The easiest way to deploy in production:
+## Tech stack
 
-```bash
-# Quick start
-docker-compose -f docker-compose.prod.yml up -d
-
-# With custom configuration
-cp .env.docker.example .env.docker
-# Edit .env.docker with your settings
-docker-compose --env-file .env.docker -f docker-compose.prod.yml up -d
-
-# Or use the Makefile for easier management
-make up-prod
-```
-
-Open [http://localhost:8080](http://localhost:8080) in your browser.
-
-`docker-compose.prod.yml` also includes an optional `leaderboard-api` service (set `LEADERBOARD_PASSPHRASE` in `.env.docker` to enable it — see [Leaderboard](#leaderboard-optional)). Omit it and the app works identically without a leaderboard.
-
-For detailed Docker Compose documentation including SSL/TLS setup, monitoring, and troubleshooting, see [DOCKER.md](DOCKER.md).
-
-##### Using the Makefile
-
-For simplified Docker management, use the included Makefile:
-
-```bash
-make help         # Show all available commands
-make build-prod   # Build production image
-make up-prod      # Start production container
-make logs-prod    # View logs
-make health       # Check container health
-make down-prod    # Stop container
-```
-
-#### Standalone Docker Containers
-
-##### Development Container
-
-```bash
-docker build -t wordle:dev .
-docker run -d -p 3000:3000 wordle:dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-##### Production Container
-
-```bash
-docker build --target=prod -t wordle:prod .
-docker run -d -p 8080:8080 wordle:prod
-```
-
-Open [http://localhost:8080](http://localhost:8080) in your browser.
-
-## Word Lists
-
-This project uses carefully curated German word lists:
-
-- **Solution Words**: 882 five-letter German words (provides ~2.4 years of daily puzzles)
-- **Valid Guesses**: 2,411 accepted words for gameplay
-- **Character Set**: A-Z only (no umlauts for universal compatibility)
-- **Quality**: Zero duplicates, zero invalid entries, 100% coverage
-
-## Technology Stack
-
-- **Frontend**: React 18 with TypeScript 5
-- **Styling**: Tailwind CSS 4 with a nature-inspired design system
-- **UI Components**: Headless UI for accessible modals
-- **Icons**: Heroicons
-- **Build Tool**: Vite 6 with vite-plugin-pwa
-- **Testing**: Vitest and React Testing Library
-- **Code Quality**: Prettier, Husky pre-commit hooks
-- **Motion**: Framer Motion
-- **Leaderboard backend** (optional, `server/`): Fastify + better-sqlite3
-
-## Project Structure
-
-```
-wordle/
-├── public/           # Static assets and PWA icons
-├── src/
-│   ├── components/   # React components
-│   │   ├── alerts/   # Alert notifications
-│   │   ├── grid/     # Game grid and cells
-│   │   ├── keyboard/ # Virtual keyboard
-│   │   ├── modals/   # Info, Settings, Stats modals
-│   │   └── stats/    # Statistics, progress tracking, and the leaderboard
-│   ├── constants/    # Game settings and word lists
-│   ├── context/      # React context providers
-│   ├── hooks/        # useGameState, useTheme, useWordOfDay
-│   └── lib/          # Utility functions
-├── docker/           # Docker / nginx configuration
-├── server/           # Optional Fastify + SQLite leaderboard API
-└── .github/          # GitHub Actions workflows
-```
-
-## Customization
-
-### Change Word Length
-
-To modify the game to use words of a different length:
-
-1. Update `MAX_WORD_LENGTH` in [src/constants/settings.ts](src/constants/settings.ts)
-2. Replace the words in [src/constants/wordlist.ts](src/constants/wordlist.ts) with words of the new length
-3. Update [src/constants/validGuesses.ts](src/constants/validGuesses.ts) with valid guesses of the new length
-
-## Development Scripts
-
-```bash
-npm run dev        # Start Vite development server
-npm start          # Alias for npm run dev
-npm run build      # Build for production → dist/
-npm run preview    # Preview production build
-npm test           # Run Vitest once
-npm run test:watch # Vitest watch mode
-npm run lint       # Check code formatting
-npm run fix        # Auto-fix formatting issues
-```
-
-## Game Settings
-
-- **Word Length**: 5 letters
-- **Max Attempts**: 6 guesses
-- **Character Set**: A-Z (26 letters)
-- **Daily Puzzle**: New word every day
-- **Hard Mode**: Optional challenge mode
-
-## Leaderboard (optional)
-
-The Stats modal can show daily and overall results for everyone who knows a shared passphrase — no accounts, no sign-up. It's powered by a small, optional service in [server/](server/) and works like this:
-
-- **Join**: enter any name plus the shared passphrase, once per device (cached in `localStorage`).
-- **Submit**: your result posts automatically when a game ends — no extra step.
-- **Overall score**: wins award 6 points for one guess down to 1 point for six guesses; losses award 0. Rankings then use wins and lower average guesses as tie-breakers.
-- **Reveal is gated**: you see who's played and their guess count right away, but full guess grids only unlock once you've finished today's word yourself — so opening Stats mid-game can't spoil anything.
-- **Fails silently**: if the backend isn't deployed, isn't reachable, or you never set up a name, the game is completely unaffected — the leaderboard section just doesn't show anything.
-
-Enabling it requires deploying `server/` alongside the app and setting a `LEADERBOARD_PASSPHRASE`. See [DOCKER.md → Leaderboard API](DOCKER.md#leaderboard-api-optional) for the full setup (Docker Compose service, Traefik/Portainer wiring, backups) and local dev instructions.
-
-## Browser Support
-
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-- Mobile browsers (iOS Safari, Chrome Mobile)
+React 18, TypeScript (strict), Vite 6, Tailwind CSS 4, Headless UI, Framer Motion and `vite-plugin-pwa`. Tests use Vitest and Testing Library. The optional backend uses Fastify and SQLite (`better-sqlite3`). Production serves the static build with nginx.
 
 ## Contributing
 
-Contributions are welcome! Please ensure:
+Issues and pull requests are welcome. Before opening a PR:
 
-1. Code passes all linting checks (`npm run lint`)
-2. All tests pass (`npm test`)
-3. Husky pre-commit hooks pass
-4. Changes are well-documented
+```bash
+npm run lint && npm test
+(cd server && npm test)   # if you touched server/
+```
 
-## License
+UI copy stays in German (`src/constants/strings.ts`). Changes to the word lists must follow the [word-list rules](docs/word-lists.md#rules). See [Development](docs/development.md) for conventions.
 
-See [LICENSE](LICENSE) file for details.
+## License & credits
 
-## Acknowledgments
-
-- Original project: [woertchen](https://github.com/diondiondion/woertchen) by diondiondion
-- Original Wordle game by Josh Wardle
+[MIT](LICENSE). Forked from [woertchen](https://github.com/diondiondion/woertchen) by diondiondion. The original Wordle is by Josh Wardle.
