@@ -12,6 +12,7 @@ import { SettingsModal } from './components/modals/SettingsModal'
 import { StatsModal } from './components/modals/StatsModal'
 import {
   GAME_COPIED_MESSAGE,
+  GAME_SUBTITLE,
   GAME_TITLE,
   SHARE_FAILED_MESSAGE,
   UPDATE_AVAILABLE_MESSAGE,
@@ -103,9 +104,14 @@ function App() {
     <div className="flex min-h-[100dvh] flex-col bg-nature-stone-50 pt-[max(0.5rem,env(safe-area-inset-top))] pb-[max(0.5rem,env(safe-area-inset-bottom))] transition-colors duration-300 dark:bg-nature-stone-900">
       <div className="game-column flex min-h-0 flex-1 flex-col">
         <header className="mt-3 mb-4 flex w-full items-center gap-1">
-          <h1 className="min-w-0 grow truncate font-display text-[clamp(1.5rem,6vw,2.25rem)] font-bold tracking-tight text-nature-stone-900 dark:text-nature-stone-50">
-            {GAME_TITLE}
-          </h1>
+          <div className="min-w-0 grow">
+            <h1 className="truncate font-display text-[clamp(1.5rem,6vw,2.25rem)] leading-tight font-bold tracking-tight text-nature-stone-900 dark:text-nature-stone-50">
+              {GAME_TITLE}
+            </h1>
+            <p className="truncate text-xs font-medium text-nature-stone-500 dark:text-nature-stone-400">
+              {GAME_SUBTITLE}
+            </p>
+          </div>
           <button
             type="button"
             className={headerIconClass}

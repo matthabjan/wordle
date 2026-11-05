@@ -1,4 +1,9 @@
 export const GAME_TITLE = import.meta.env.VITE_GAME_NAME || 'Wordle'
+// Major.minor only, so patch releases don't change the subtitle
+export const GAME_SUBTITLE = `German Edition ${__APP_VERSION__
+  .split('.')
+  .slice(0, 2)
+  .join('.')}`
 
 export const WIN_MESSAGES = [
   'Gut gemacht!',
