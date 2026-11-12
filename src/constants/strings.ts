@@ -48,6 +48,12 @@ export const NOT_CONTAINED_MESSAGE = (letter: string) =>
 export const ENTER_TEXT = 'Eingabe'
 export const DELETE_TEXT = 'Löschen'
 export const STATISTICS_TITLE = 'Statistik'
+export const RESULT_TAB_TEXT = 'Ergebnis'
+export const RESULT_WON_TEXT = (guessCount: number) =>
+  `Gelöst in ${guessCount} ${guessCount === 1 ? 'Versuch' : 'Versuchen'}`
+export const NO_STATS_TEXT = 'Noch keine Spiele gespielt.'
+export const GUESS_GRID_LABEL = (guessCount: number) =>
+  `Spielverlauf, ${guessCount} ${guessCount === 1 ? 'Versuch' : 'Versuche'}`
 export const GUESS_DISTRIBUTION_TEXT = 'Versuchsverteilung'
 export const NEW_WORD_TEXT = 'Neues Wort in'
 export const SHARE_TEXT = 'Teilen'
@@ -65,6 +71,28 @@ export const STATUS_ABSENT = 'nicht enthalten'
 export const LEADERBOARD_TITLE = 'Bestenliste'
 export const LEADERBOARD_DAILY_TAB_TEXT = 'Heute'
 export const LEADERBOARD_OVERALL_TAB_TEXT = 'Gesamt'
+export const LEADERBOARD_ARCHIVE_TAB_TEXT = 'Archiv'
+export const LEADERBOARD_ALL_TIME_TITLE = 'Ewige Tabelle'
+export const LEADERBOARD_ARCHIVE_EMPTY_TEXT =
+  'Noch keine abgeschlossenen Runden.'
+export const LEADERBOARD_BACK_TEXT = 'Zurück'
+export const LEADERBOARD_NEW_ROUND_TEXT = 'Neue Runde seit 1. Januar'
+// `names` are the round's first three players, best first
+export const LEADERBOARD_ROUND_WINNER_TEXT = (
+  round: string,
+  names: string[],
+) => {
+  const [winner, second, third] = names
+  const runnersUp = [second, third].filter(Boolean).join(' und ')
+  return `${round}: ${winner} gewinnt${runnersUp ? ` vor ${runnersUp}` : ''}`
+}
+export const LEADERBOARD_LOADING_TEXT = 'Bestenliste wird geladen'
+export const LEADERBOARD_SIGNED_IN_AS = (name: string) =>
+  `Angemeldet als ${name}`
+export const LEADERBOARD_LEAVE_TEXT = 'Abmelden'
+export const LEADERBOARD_LEAVE_CONFIRM_TEXT =
+  'Name und Passwort werden auf diesem Gerät gelöscht. Deine Ergebnisse bleiben in der Bestenliste.'
+export const CANCEL_TEXT = 'Abbrechen'
 export const LEADERBOARD_SETUP_INTRO =
   'Vergleiche dein Ergebnis mit anderen. Wer das Passwort kennt, kann mitmachen.'
 export const LEADERBOARD_NAME_LABEL = 'Dein Name'
@@ -74,7 +102,6 @@ export const LEADERBOARD_JOINING_TEXT = 'Verbinde …'
 export const LEADERBOARD_WRONG_PASSPHRASE_MESSAGE = 'Passwort falsch'
 export const LEADERBOARD_MISSING_FIELDS_MESSAGE =
   'Bitte Name und Passwort eingeben'
-export const LEADERBOARD_CHANGE_IDENTITY_TEXT = 'Namen ändern'
 export const LEADERBOARD_YOU_SUFFIX = '(Du)'
 export const LEADERBOARD_LOST_LABEL = 'X/6'
 export const LEADERBOARD_EMPTY_TEXT = 'Noch niemand hat heute gespielt.'

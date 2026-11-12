@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import type { GameResult } from './game'
-import { createLeaderboard, httpTransport } from './leaderboard'
+import { ALL_ROUNDS, createLeaderboard, httpTransport } from './leaderboard'
 import { createInMemoryTransport } from './leaderboardInMemory'
 import { getDateForSolutionIndex } from './words'
 
@@ -181,6 +181,7 @@ describe('leaderboard participation', () => {
       submitResult: boom,
       dailyStandings: boom,
       overallStandings: boom,
+      rounds: boom,
     })
 
     expect(await leaderboard.join(ADA, TODAY)).toEqual({ status: 'joined' })
@@ -190,6 +191,29 @@ describe('leaderboard participation', () => {
     })
     expect(await leaderboard.overallStandings()).toEqual({
       status: 'unavailable',
+    })
+    expect(await leaderboard.rounds()).toEqual({ status: 'unavailable' })
+  })
+
+  test('the overall ranking is split into yearly rounds', async () => {
+    const { server, leaderboard } = setup()
+    await leaderboard.join(ADA, TODAY)
+    server.seed('Ada', { date: '2025-12-31', guesses: ['KUGEL'], won: true })
+    server.seed('Ben', { date: '2026-01-01', guesses: ['KUGEL'], won: true })
+
+    expect(await leaderboard.rounds()).toMatchObject({
+      status: 'ok',
+      mode: 'year',
+      rounds: [
+        { id: '2026', top: [{ name: 'Ben' }] },
+        { id: '2025', top: [{ name: 'Ada' }] },
+      ],
+    })
+    expect(await leaderboard.overallStandings('2025')).toMatchObject({
+      entries: [{ name: 'Ada', points: 6 }],
+    })
+    expect(await leaderboard.overallStandings(ALL_ROUNDS)).toMatchObject({
+      entries: [{ name: 'Ada' }, { name: 'Ben' }],
     })
   })
 })
@@ -221,6 +245,31 @@ describe('http transport', () => {
       expect(String(url)).not.toContain(encodeURIComponent(identity.passphrase))
       expect(init.headers.Authorization).toBe(expectedAuth)
     }
+  })
+
+  test('treats a server without the rounds route as having no rounds', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(async () => new Response('', { status: 404 })),
+    )
+
+    expect(await httpTransport.rounds(identity)).toEqual({
+      status: 'ok',
+      mode: 'none',
+      rounds: [],
+    })
+  })
+
+  test('asks for a specific round only when one is given', async () => {
+    const fetchMock = vi.fn().mockImplementation(async () => okResponse())
+    vi.stubGlobal('fetch', fetchMock)
+
+    await httpTransport.overallStandings(identity)
+    await httpTransport.overallStandings(identity, '2026')
+
+    const [first, second] = fetchMock.mock.calls.map(([url]) => String(url))
+    expect(first).not.toContain('round=')
+    expect(second).toContain('round=2026')
   })
 
   test('submit sends the passphrase as a header, not in the body', async () => {

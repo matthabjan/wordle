@@ -7,7 +7,6 @@ import {
   REVEAL_TIME_MS,
 } from '../constants/settings'
 import {
-  CORRECT_WORD_MESSAGE,
   HARD_MODE_ALERT_MESSAGE,
   NOT_ENOUGH_LETTERS_MESSAGE,
   WIN_MESSAGES,
@@ -57,8 +56,7 @@ export const useGameState = ({
   solutionIndex,
   onOpenStats,
 }: Options) => {
-  const { showError: showErrorAlert, showSuccess: showSuccessAlert } =
-    useAlert()
+  const { showInfo: showInfoAlert, showSuccess: showSuccessAlert } = useAlert()
 
   const [game, setGame] = useState(() =>
     startGame({ solution, solutionIndex, isHardMode: getStoredGameMode() }),
@@ -103,13 +101,8 @@ export const useGameState = ({
       guesses: loaded?.solution === solution ? loaded.guesses : [],
     })
     setGame(restored)
-
-    if (restored.status === 'lost') {
-      showErrorAlert(CORRECT_WORD_MESSAGE(solution), { persist: true })
-    }
-
     setHasRestored(true)
-  }, [solution, solutionIndex, clearTimers, showErrorAlert])
+  }, [solution, solutionIndex, clearTimers])
 
   useEffect(() => {
     if (!hasRestored) return
@@ -144,13 +137,13 @@ export const useGameState = ({
   const handleHardMode = useCallback(
     (isHard: boolean) => {
       if (!setHardMode(game, isHard).allowed) {
-        showErrorAlert(HARD_MODE_ALERT_MESSAGE)
+        showInfoAlert(HARD_MODE_ALERT_MESSAGE)
         return
       }
       setGame((prev) => setHardMode(prev, isHard).game)
       setStoredGameMode(isHard)
     },
-    [game, showErrorAlert],
+    [game, showInfoAlert],
   )
 
   // Input is not forwarded to the game while the last guess is being revealed.
@@ -191,7 +184,7 @@ export const useGameState = ({
     if (outcome.kind === 'ignored') return
 
     if (outcome.kind === 'rejected') {
-      showErrorAlert(rejectionMessage(outcome))
+      showInfoAlert(rejectionMessage(outcome))
       jiggle()
       return
     }
@@ -211,23 +204,11 @@ export const useGameState = ({
       )
     }
 
+    // The lost word is shown by the result sheet, which opens after the reveal.
     if (outcome.kind === 'lost') {
       setStats(addStatsForCompletedGame(stats, MAX_CHALLENGES, solutionIndex))
-      showErrorAlert(CORRECT_WORD_MESSAGE(solution), {
-        persist: true,
-        delayMs: REVEAL_DURATION_MS + 1,
-      })
     }
-  }, [
-    game,
-    isRevealing,
-    jiggle,
-    schedule,
-    showErrorAlert,
-    solution,
-    solutionIndex,
-    stats,
-  ])
+  }, [game, isRevealing, jiggle, schedule, showInfoAlert, solutionIndex, stats])
 
   return {
     currentGuess: game.currentRow,
