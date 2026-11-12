@@ -1,3 +1,4 @@
+import { GAME_EDITION_TEXT } from '../../constants/strings'
 import { BaseModal } from './BaseModal'
 import { SettingsToggle } from './SettingsToggle'
 
@@ -43,6 +44,9 @@ export const SettingsModal = ({
           description="Farben für bessere Erkennbarkeit."
         />
       </div>
+      <p className="mt-6 text-xs text-nature-stone-500 dark:text-nature-stone-400">
+        {GAME_EDITION_TEXT}
+      </p>
     </BaseModal>
   )
 }

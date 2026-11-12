@@ -13,6 +13,8 @@ type Props = {
   children?: ReactNode
   value: string
   wide?: boolean
+  /** Primary action key (Enter) */
+  accent?: boolean
   status?: CharStatus
   onClick: (value: string) => void
   isRevealing?: boolean
@@ -23,6 +25,7 @@ export const Key = ({
   children,
   status,
   wide = false,
+  accent = false,
   value,
   onClick,
   isRevealing,
@@ -41,15 +44,17 @@ export const Key = ({
           : undefined
 
   const classes = classnames(
-    'flex items-center justify-center rounded-xl mx-0.5 font-semibold cursor-pointer select-none shadow-soft transition-all duration-300 touch-manipulation min-h-[48px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-nature-stone-900',
+    'flex items-center justify-center rounded-xl mx-0.5 font-semibold cursor-pointer select-none shadow-soft transition-all duration-300 touch-manipulation text-[clamp(1rem,4.8vw,1.25rem)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-nature-stone-900',
     {
-      'bg-nature-stone-200 dark:bg-nature-stone-600 dark:text-white hover:bg-nature-stone-300 dark:hover:bg-nature-stone-500 active:scale-95':
-        !status,
+      'bg-nature-stone-200 dark:bg-nature-stone-500 dark:text-white hover:bg-nature-stone-300 dark:hover:bg-nature-stone-400 active:scale-95':
+        !status && !accent,
+      'bg-[var(--accent-color)] text-white hover:brightness-110 active:scale-95':
+        accent,
       'key-status-absent': status === 'absent',
       'key-status-correct': status === 'correct',
       'key-status-present': status === 'present',
-      'flex-[1.5] px-0.5 text-[0.65rem] leading-tight sm:text-xs': wide,
-      'flex-1 text-xs': !wide,
+      'flex-[1.5]': wide,
+      'flex-1': !wide,
     },
   )
 

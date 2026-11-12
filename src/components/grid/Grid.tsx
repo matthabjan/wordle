@@ -33,7 +33,7 @@ export const Grid = ({
   })
 
   return (
-    <div className="pb-4" role="grid" aria-label="Wordle-Raster">
+    <div className="board" role="grid" aria-label="Wordle-Raster">
       {guesses.map((guess, i) => (
         <CompletedRow
           key={i}

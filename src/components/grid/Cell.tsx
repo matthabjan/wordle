@@ -41,7 +41,7 @@ export const Cell = ({
 
   const classes = classnames(
     'border-solid border-2 flex items-center justify-center mx-0.5 font-bold rounded-xl dark:text-white transition-all duration-200 touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-nature-stone-900',
-    compact ? 'text-base h-9 w-9' : 'text-[clamp(1.5rem,7vw,2.25rem)]',
+    { 'text-base h-9 w-9': compact },
     {
       'bg-nature-stone-50 dark:bg-nature-stone-800 border-nature-stone-300 dark:border-nature-stone-600 cell-tactile':
         !status,
@@ -83,6 +83,7 @@ export const Cell = ({
         animationDelay,
         width: 'var(--tile-size)',
         height: 'var(--tile-size)',
+        fontSize: 'calc(var(--tile-size) * 0.56)',
       }
 
   if (interactive) {

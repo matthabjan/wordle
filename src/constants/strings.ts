@@ -1,9 +1,21 @@
 export const GAME_TITLE = import.meta.env.VITE_GAME_NAME || 'Wordle'
-// Major.minor only, so patch releases don't change the subtitle
-export const GAME_SUBTITLE = `German Edition ${__APP_VERSION__
+// Major.minor only, so patch releases don't change the edition line
+export const GAME_EDITION_TEXT = `German Edition ${__APP_VERSION__
   .split('.')
   .slice(0, 2)
   .join('.')}`
+
+const puzzleDateFormatter = new Intl.DateTimeFormat('de-DE', {
+  day: 'numeric',
+  month: 'short',
+})
+// `isoDate` is the local YYYY-MM-DD of the puzzle
+export const PUZZLE_LABEL = (solutionIndex: number, isoDate: string) => {
+  const [year, month, day] = isoDate.split('-').map(Number)
+  return `Nr. ${solutionIndex} · ${puzzleDateFormatter.format(
+    new Date(year, month - 1, day),
+  )}`
+}
 
 export const WIN_MESSAGES = [
   'Gut gemacht!',
