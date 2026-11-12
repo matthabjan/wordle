@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ALERT_TIME_MS,
   GAME_LOST_INFO_DELAY,
+  GAME_WON_INFO_DELAY,
   MAX_CHALLENGES,
   MAX_WORD_LENGTH,
   REVEAL_TIME_MS,
@@ -9,7 +10,6 @@ import {
 import {
   HARD_MODE_ALERT_MESSAGE,
   NOT_ENOUGH_LETTERS_MESSAGE,
-  WIN_MESSAGES,
   WORD_NOT_FOUND_MESSAGE,
 } from '../constants/strings'
 import { useAlert } from '../context/AlertContext'
@@ -113,21 +113,16 @@ export const useGameState = ({
   }, [game.guesses, game.solution, hasRestored])
 
   useEffect(() => {
+    // The result sheet carries the win phrase and the lost word.
     if (isGameWon) {
-      const winMessage =
-        WIN_MESSAGES[Math.floor(Math.random() * WIN_MESSAGES.length)]
-      // Neutral, not green: the toast lies over the solved (green) row.
-      showInfoAlert(winMessage, {
-        delayMs: REVEAL_DURATION_MS,
-        onClose: () => onOpenStats(),
-      })
       vibrate([20, 40, 20])
+      schedule(() => onOpenStats(), GAME_WON_INFO_DELAY)
     }
 
     if (isGameLost) {
       schedule(() => onOpenStats(), GAME_LOST_INFO_DELAY)
     }
-  }, [isGameWon, isGameLost, showInfoAlert, onOpenStats, schedule])
+  }, [isGameWon, isGameLost, onOpenStats, schedule])
 
   const jiggle = useCallback(() => {
     vibrate(30)

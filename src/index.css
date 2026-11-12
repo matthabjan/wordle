@@ -141,7 +141,6 @@
 
   --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08);
   --shadow-soft-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
-  /* Lifts the toast off the coloured tiles it covers */
   --shadow-toast: 0 6px 24px rgba(0, 0, 0, 0.35);
 }
 

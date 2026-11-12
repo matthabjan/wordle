@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import Countdown from 'react-countdown'
-import { MAX_CHALLENGES } from '../../constants/settings'
 import {
-  CORRECT_WORD_MESSAGE,
+  CORRECT_WORD_INTRO,
   GUESS_DISTRIBUTION_TEXT,
   LEADERBOARD_TITLE,
   NEW_WORD_TEXT,
@@ -12,6 +11,7 @@ import {
   SHARE_SPOILER_TEXT,
   SHARE_TEXT,
   STATISTICS_TITLE,
+  WIN_MESSAGE,
 } from '../../constants/strings'
 import { GameStats } from '../../lib/localStorage'
 import { shareStatus, shareStatusWithBBCode } from '../../lib/share'
@@ -41,6 +41,11 @@ type Props = {
 type Tab = 'result' | 'stats' | 'board'
 
 const TAB_ID_PREFIX = 'stats-sheet'
+
+const resultHeadlineClass =
+  'font-display text-2xl leading-tight font-bold text-balance text-nature-stone-900 dark:text-nature-stone-50'
+const resultSublineClass =
+  'mt-1 text-base text-nature-stone-700 dark:text-nature-stone-200'
 
 const focusRing =
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-nature-stone-800'
@@ -115,14 +120,23 @@ export const StatsModal = ({
       >
         {tab === 'result' && (
           <div className="flex flex-col items-center">
-            <p className="font-display text-3xl font-bold text-nature-stone-900 tabular-nums dark:text-nature-stone-50">
-              {isGameWon ? guesses.length : 'X'}/{MAX_CHALLENGES}
-            </p>
-            <p className="mt-1 text-base text-nature-stone-700 dark:text-nature-stone-200">
-              {isGameWon
-                ? RESULT_WON_TEXT(guesses.length)
-                : CORRECT_WORD_MESSAGE(solution)}
-            </p>
+            {isGameWon ? (
+              <>
+                <p className={resultHeadlineClass}>
+                  {WIN_MESSAGE(solutionIndex, guesses.length)}
+                </p>
+                <p className={resultSublineClass}>
+                  {RESULT_WON_TEXT(guesses.length)}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className={resultSublineClass}>{CORRECT_WORD_INTRO}</p>
+                <p className={`${resultHeadlineClass} tracking-widest`}>
+                  {solution}
+                </p>
+              </>
+            )}
             <div className="mt-4">
               <MiniGrid guesses={guesses} solution={solution} size="lg" />
             </div>

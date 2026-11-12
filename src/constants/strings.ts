@@ -31,6 +31,9 @@ export const WIN_MESSAGES = [
   'Stabile Leistung',
   'Prima, ein Experte!',
 ]
+// The same phrase every time a finished game is looked at again
+export const WIN_MESSAGE = (solutionIndex: number, guessCount: number) =>
+  WIN_MESSAGES[(solutionIndex + guessCount) % WIN_MESSAGES.length]
 export const GAME_COPIED_MESSAGE = 'Spielverlauf kopiert'
 export const SHARE_FAILED_MESSAGE = 'Teilen fehlgeschlagen'
 export const UPDATE_AVAILABLE_MESSAGE = 'Update verfügbar – neu laden'
@@ -39,8 +42,7 @@ export const NOT_ENOUGH_LETTERS_MESSAGE = 'Nicht genug Buchstaben'
 export const WORD_NOT_FOUND_MESSAGE = 'Wort nicht gefunden'
 export const HARD_MODE_ALERT_MESSAGE =
   'Der schwere Modus kann nur am Anfang eines Spiels aktiviert werden'
-export const CORRECT_WORD_MESSAGE = (solution: string) =>
-  `Das gesuchte Wort war ${solution}`
+export const CORRECT_WORD_INTRO = 'Das gesuchte Wort war'
 export const WRONG_SPOT_MESSAGE = (guess: string, position: number) =>
   `Buchstabe ${guess} muss an Position ${position} verwendet werden`
 export const NOT_CONTAINED_MESSAGE = (letter: string) =>

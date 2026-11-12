@@ -8,10 +8,11 @@ type Props = {
   variant?: 'success' | 'error' | 'info'
 }
 
-// Toast just below the header, above the board. Sits over open sheets too.
+// Shown over the header for a moment: the one place with a plain background
+// that is not needed while a message is read. Sits over open sheets too.
 export const Alert = ({ isOpen, message, variant = 'error' }: Props) => {
   const classes = classNames(
-    'max-w-full rounded-full px-5 py-3 text-center text-base leading-snug font-semibold text-balance break-words shadow-toast',
+    'flex min-h-[3.25rem] w-full max-w-[calc(var(--container-game)-2rem)] items-center justify-center rounded-2xl px-4 py-2 text-center text-base leading-snug font-semibold text-balance break-words shadow-toast',
     {
       'bg-[var(--danger-bg-color)] text-white': variant === 'error',
       'bg-[var(--accent-color)] text-white': variant === 'success',
@@ -21,7 +22,7 @@ export const Alert = ({ isOpen, message, variant = 'error' }: Props) => {
   )
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-[calc(max(0.5rem,env(safe-area-inset-top))+3.75rem)] z-20 flex justify-center px-4">
+    <div className="pointer-events-none fixed inset-x-0 top-[max(0.5rem,env(safe-area-inset-top))] z-20 flex justify-center px-4">
       <Transition
         show={isOpen}
         as={Fragment}
