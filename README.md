@@ -10,11 +10,13 @@
 Wordle – German Edition is a daily word puzzle in the spirit of Wordle: guess the five-letter word in six tries. It's a self-hostable Progressive Web App (PWA) with no ads, no tracking and no accounts. Your progress stays on your device. An optional leaderboard, shared by passphrase, lets friends compare results.
 
 <p align="center">
-  <img src="docs/screenshots/game.png" alt="Game board with three guesses and colour-coded keyboard" width="260">
+  <img src="docs/screenshots/game.png" alt="Game board with three guesses and colour-coded keyboard" width="200">
   &nbsp;
-  <img src="docs/screenshots/stats-leaderboard.png" alt="Statistics and daily leaderboard in dark mode" width="260">
+  <img src="docs/screenshots/result.png" alt="Result sheet after a win: tile grid, share button and countdown" width="200">
   &nbsp;
-  <img src="docs/screenshots/settings.png" alt="Settings: hard mode, dark mode, high contrast" width="260">
+  <img src="docs/screenshots/stats-leaderboard.png" alt="Daily leaderboard in dark mode" width="200">
+  &nbsp;
+  <img src="docs/screenshots/settings.png" alt="Settings: hard mode, design (system, light, dark), high contrast" width="200">
 </p>
 
 ## Features
@@ -23,8 +25,9 @@ Wordle – German Edition is a daily word puzzle in the spirit of Wordle: guess 
 - **Universal keyboard**: umlauts and ß are spelled out (`ä → ae`, `ß → ss`), so any keyboard works.
 - **Edit with the cursor**: tap any letter in the current row to overwrite it.
 - **Hard mode**: every guess must use the hints already revealed.
-- **Dark mode and high contrast**: includes a colour-blind-friendly palette.
-- **Statistics**: tracks streaks and the distribution of guesses per game, stored locally.
+- **Built for phones**: the board always fits the screen without scrolling, with large keys and readable colours.
+- **Light, dark or system theme, and high contrast**: includes a colour-blind-friendly palette.
+- **Result and statistics**: a result sheet after every game, plus streaks and the distribution of guesses per game, stored locally.
 - **Sharing**: share via the system share sheet or the clipboard, with an optional spoiler version for friends.
 - **Installable PWA**: works offline and feels native on iOS and Android home screens.
 - **Optional leaderboard**: daily and yearly rankings (with an archive of past years) for everyone who knows a shared passphrase. Grids only unlock once you've finished the word yourself, and the game is unaffected if the backend is down.
@@ -64,7 +67,7 @@ make up-prod                          # app + leaderboard API → http://localho
 
 ## Tech stack
 
-React 18, TypeScript (strict), Vite 6, Tailwind CSS 4, Headless UI, Framer Motion and `vite-plugin-pwa`. Tests use Vitest and Testing Library. The optional backend uses Fastify and SQLite (`better-sqlite3`). Production serves the static build with nginx.
+React 18, TypeScript (strict), Vite 6, Tailwind CSS 4, Headless UI and `vite-plugin-pwa`. Tests use Vitest and Testing Library. The optional backend uses Fastify and SQLite (`better-sqlite3`). Production serves the static build with nginx.
 
 ## Contributing
 

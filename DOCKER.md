@@ -226,7 +226,7 @@ services:
       - "traefik.http.routers.wordle.tls.certresolver=letsencrypt"
       - "traefik.http.services.wordle.loadbalancer.server.port=8080"
 
-  # Optional — powers the daily leaderboard folded into the Stats modal.
+  # Optional — powers the leaderboard in the stats sheet.
   # Omit this service entirely and the app keeps working normally; nginx's
   # /api/ proxy just 502s and the frontend fails silently. Must be named
   # "leaderboard-api" and share a network with "wordle" — nginx resolves that name
@@ -315,7 +315,7 @@ Let Caddy/Traefik set HSTS; the app image already sends CSP and related headers.
 
 ## Leaderboard API (optional)
 
-`server/` is a small Fastify + SQLite service that powers the daily and overall leaderboard folded into the Stats modal. It's entirely optional — the core game works identically with or without it.
+`server/` is a small Fastify + SQLite service that powers the daily and yearly leaderboard in the stats sheet. It's entirely optional — the core game works identically with or without it.
 
 - **Auth**: one shared `LEADERBOARD_PASSPHRASE` env var; anyone who knows it enters it once alongside a display name, cached in `localStorage` on their device. There's no per-person account — the passphrase is the only gate. The app sends it as `Authorization: Bearer <encodeURIComponent(passphrase)>`, so it stays out of URLs and access logs.
 - **Yearly rounds**: the overall ranking restarts every calendar year; finished years and an all-time table stay available in the app's archive. Nothing is deleted. Set `LEADERBOARD_ROUNDS=none` for a single never-resetting ranking.

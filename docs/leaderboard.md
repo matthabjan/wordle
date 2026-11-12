@@ -5,12 +5,14 @@
 The Stats sheet can show **daily** and **yearly** rankings, plus an archive of past years and an all-time table, for everyone who knows a shared passphrase. It's backed by a small self-hosted service in [`server/`](../server) (Fastify + SQLite). The game works the same whether or not the service is deployed.
 
 <p align="center">
-  <img src="screenshots/stats-leaderboard.png" alt="Daily leaderboard in the Stats modal" width="300">
+  <img src="screenshots/stats-leaderboard.png" alt="Daily leaderboard in the stats sheet" width="260">
+  &nbsp;
+  <img src="screenshots/leaderboard-archive.png" alt="Archive with the all-time table and a finished year" width="260">
 </p>
 
 ## How it works
 
-- **Joining:** a player opens Stats and enters a display name and the shared passphrase. Both are cached in `localStorage` on that device. There are no accounts: anyone who knows the passphrase can join under any name.
+- **Joining:** a player opens the stats sheet, switches to *Bestenliste* and enters a display name and the shared passphrase. Both are cached in `localStorage` on that device. There are no accounts: anyone who knows the passphrase can join under any name.
 - **Submitting:** the result is posted automatically when a game ends, or when you join after finishing. A submission that failed (e.g. offline) is retried the next time the leaderboard is opened. Each person has one row per day, keyed by `(date, name)` and updated if they submit again.
 - **Spoiler protection:** before you've finished the day's word, you only see names and guess counts. The full colour grids unlock once your own result for that day is stored.
 - **Overall score:** a win scores 6 points for one guess, down to 1 point for six guesses. A loss scores 0. Ties are broken by number of wins, then lower average guesses, then name.
