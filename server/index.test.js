@@ -19,6 +19,7 @@ test('returns server-derived overall leaderboard statistics', async (t) => {
     dbPath: ':memory:',
     passphrase: PASSPHRASE,
     logger: false,
+    now: () => new Date(2026, 6, 20),
   })
   t.after(() => app.close())
 
@@ -95,6 +96,7 @@ test('upserts a day instead of double-counting it', async (t) => {
     dbPath: ':memory:',
     passphrase: PASSPHRASE,
     logger: false,
+    now: () => new Date(2026, 6, 20),
   })
   t.after(() => app.close())
 
@@ -320,4 +322,129 @@ test('keys the limiter on the forwarded client address when proxies are trusted'
   await via('203.0.113.7', 'wrong')
   assert.equal((await via('203.0.113.7', PASSPHRASE)).statusCode, 429)
   assert.equal((await via('198.51.100.9', PASSPHRASE)).statusCode, 200)
+})
+
+const authed = (app, url, query = {}) =>
+  app.inject({
+    method: 'GET',
+    url,
+    headers: { authorization: `Bearer ${PASSPHRASE}` },
+    query: { name: 'Ada', ...query },
+  })
+
+const seedTwoYears = async (app) => {
+  const rows = [
+    { date: '2025-12-31', name: 'Ada', guesses: ['APPLE'], won: true },
+    { date: '2025-12-31', name: 'Ben', guesses: ['APPLE', 'BRAVE'], won: true },
+    { date: '2026-01-01', name: 'Ben', guesses: ['APPLE', 'BRAVE'], won: true },
+    {
+      date: '2026-01-02',
+      name: 'Ada',
+      guesses: ['APPLE', 'BRAVE', 'CRANE'],
+      won: true,
+    },
+  ]
+  for (const row of rows) {
+    assert.equal((await submitResult(app, row)).statusCode, 204)
+  }
+}
+
+const points = (response) =>
+  response.json().map((entry) => [entry.name, entry.points])
+
+test('the overall ranking restarts every calendar year', async (t) => {
+  const app = buildApp({
+    dbPath: ':memory:',
+    passphrase: PASSPHRASE,
+    logger: false,
+    now: () => new Date(2026, 5, 1),
+  })
+  t.after(() => app.close())
+  await seedTwoYears(app)
+
+  // No `round`: what clients that predate rounds ask for.
+  const legacy = await authed(app, '/api/leaderboard/overall')
+  assert.deepEqual(points(legacy), [
+    ['Ben', 5],
+    ['Ada', 4],
+  ])
+
+  const current = await authed(app, '/api/leaderboard/overall', {
+    round: '2026',
+  })
+  assert.deepEqual(current.json(), legacy.json())
+
+  const previous = await authed(app, '/api/leaderboard/overall', {
+    round: '2025',
+  })
+  assert.deepEqual(points(previous), [
+    ['Ada', 6],
+    ['Ben', 5],
+  ])
+
+  const allTime = await authed(app, '/api/leaderboard/overall', {
+    round: 'all',
+  })
+  assert.deepEqual(points(allTime), [
+    ['Ada', 10],
+    ['Ben', 10],
+  ])
+
+  const invalid = await authed(app, '/api/leaderboard/overall', {
+    round: 'latest',
+  })
+  assert.equal(invalid.statusCode, 400)
+})
+
+test('lists the years with results and their podium', async (t) => {
+  const app = buildApp({
+    dbPath: ':memory:',
+    passphrase: PASSPHRASE,
+    logger: false,
+  })
+  t.after(() => app.close())
+  await seedTwoYears(app)
+
+  const response = await authed(app, '/api/leaderboard/rounds')
+  assert.equal(response.statusCode, 200)
+  const body = response.json()
+  assert.equal(body.mode, 'year')
+  assert.deepEqual(
+    body.rounds.map((round) => [
+      round.id,
+      round.top.map((entry) => entry.name),
+    ]),
+    [
+      ['2026', ['Ben', 'Ada']],
+      ['2025', ['Ada', 'Ben']],
+    ],
+  )
+
+  const unauthorized = await app.inject({
+    method: 'GET',
+    url: '/api/leaderboard/rounds',
+    query: { name: 'Ada' },
+  })
+  assert.equal(unauthorized.statusCode, 401)
+})
+
+test('LEADERBOARD_ROUNDS=none keeps one never-resetting ranking', async (t) => {
+  const app = buildApp({
+    dbPath: ':memory:',
+    passphrase: PASSPHRASE,
+    logger: false,
+    rounds: 'none',
+    now: () => new Date(2026, 5, 1),
+  })
+  t.after(() => app.close())
+  await seedTwoYears(app)
+
+  const overall = await authed(app, '/api/leaderboard/overall')
+  assert.deepEqual(points(overall), [
+    ['Ada', 10],
+    ['Ben', 10],
+  ])
+
+  const rounds = await authed(app, '/api/leaderboard/rounds')
+  assert.deepEqual(rounds.json(), { mode: 'none', rounds: [] })
 })

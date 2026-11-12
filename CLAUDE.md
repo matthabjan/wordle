@@ -51,6 +51,7 @@ Versioning: SemVer from root `package.json`; `server/package.json` must carry th
 - Identity (`leaderboardName` / `leaderboardPassphrase`) is cached in `localStorage`; distinct keys from the core game state, additive only.
 - Reveal is gated server-side: a viewer only receives other players' guess grids once they've submitted their own result for that date (see `GET /api/leaderboard` in `server/index.js`).
 - Overall rankings come from `GET /api/leaderboard/overall` and are derived server-side from daily rows: wins score 6 points for one guess down to 1 point for six guesses; losses score 0.
+- Rounds are calendar years derived from the row dates (`LEADERBOARD_ROUNDS=year`, default; `none` = one never-resetting ranking). `overall` takes `round=<YYYY|all>` and without it returns the running year, so clients from before rounds keep working; `GET /api/leaderboard/rounds` lists the years with their podium. A client must treat a missing rounds route as `none`.
 - Must fail silently and never block the core game: nothing in `createLeaderboard` throws (a failed submission is retried the next time standings are requested), and nginx resolves the `leaderboard-api` upstream at request time (not at startup) so the app still serves the game if that container is absent or down.
 - Every `(date, name)` submission is upserted and never deleted, so the overall leaderboard remains derivable without a separate aggregate table.
 

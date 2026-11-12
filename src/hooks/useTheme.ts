@@ -1,30 +1,37 @@
 import { useEffect, useState } from 'react'
 import {
   getStoredIsHighContrastMode,
-  getStoredTheme,
+  getStoredThemeSetting,
   setStoredIsHighContrastMode,
-  setStoredTheme,
+  setStoredThemeSetting,
+  ThemeSetting,
 } from '../lib/localStorage'
 
-export const useTheme = () => {
-  const prefersDarkMode =
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-color-scheme: dark)').matches
+const DARK_QUERY = '(prefers-color-scheme: dark)'
+// Page backgrounds, mirrored in index.css and public/theme-init.js
+const THEME_COLOR = { light: '#fafaf9', dark: '#1c1917' }
 
-  const storedTheme = getStoredTheme()
-  const [isDarkMode, setIsDarkMode] = useState(
-    storedTheme !== null ? storedTheme : prefersDarkMode,
+export const useTheme = () => {
+  const [themeSetting, setThemeSetting] = useState<ThemeSetting>(() =>
+    getStoredThemeSetting(),
+  )
+  const [prefersDarkMode, setPrefersDarkMode] = useState(
+    () => window.matchMedia(DARK_QUERY).matches,
   )
   const [isHighContrastMode, setIsHighContrastMode] = useState(
     getStoredIsHighContrastMode(),
   )
 
   useEffect(() => {
-    // Persist resolved theme so share emoji grid matches the UI
-    if (getStoredTheme() === null) {
-      setStoredTheme(isDarkMode)
-    }
-  }, [isDarkMode])
+    const query = window.matchMedia(DARK_QUERY)
+    const onChange = (event: MediaQueryListEvent) =>
+      setPrefersDarkMode(event.matches)
+    query.addEventListener('change', onChange)
+    return () => query.removeEventListener('change', onChange)
+  }, [])
+
+  const isDarkMode =
+    themeSetting === 'system' ? prefersDarkMode : themeSetting === 'dark'
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDarkMode)
@@ -33,19 +40,20 @@ export const useTheme = () => {
       isHighContrastMode,
     )
 
-    const themeColor = isDarkMode ? '#1c1917' : '#fafaf9'
-    let meta = document.querySelector('meta[name="theme-color"]:not([media])')
-    if (!meta) {
-      meta = document.createElement('meta')
-      meta.setAttribute('name', 'theme-color')
-      document.head.appendChild(meta)
-    }
-    meta.setAttribute('content', themeColor)
+    // All of them, so the device-scheme variants cannot overrule the setting.
+    document
+      .querySelectorAll('meta[name="theme-color"]')
+      .forEach((meta) =>
+        meta.setAttribute(
+          'content',
+          isDarkMode ? THEME_COLOR.dark : THEME_COLOR.light,
+        ),
+      )
   }, [isDarkMode, isHighContrastMode])
 
-  const handleDarkMode = (isDark: boolean) => {
-    setIsDarkMode(isDark)
-    setStoredTheme(isDark)
+  const handleThemeSetting = (setting: ThemeSetting) => {
+    setThemeSetting(setting)
+    setStoredThemeSetting(setting)
   }
 
   const handleHighContrastMode = (isHighContrast: boolean) => {
@@ -54,9 +62,9 @@ export const useTheme = () => {
   }
 
   return {
-    isDarkMode,
+    themeSetting,
     isHighContrastMode,
-    handleDarkMode,
+    handleThemeSetting,
     handleHighContrastMode,
   }
 }

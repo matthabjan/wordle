@@ -107,15 +107,22 @@ export const getStoredIsHighContrastMode = () => {
   return localStorage.getItem(highContrastKey) === '1'
 }
 
-export const setStoredTheme = (isDark: boolean) => {
-  localStorage.setItem(themeKey, isDark ? 'dark' : 'light')
+export type ThemeSetting = 'system' | 'light' | 'dark'
+
+// `system` is stored as no entry at all, which versions before the setting
+// existed also read as "follow the device". public/theme-init.js reads the
+// same key before the app loads.
+export const setStoredThemeSetting = (setting: ThemeSetting) => {
+  if (setting === 'system') {
+    localStorage.removeItem(themeKey)
+  } else {
+    localStorage.setItem(themeKey, setting)
+  }
 }
 
-export const getStoredTheme = (): boolean | null => {
+export const getStoredThemeSetting = (): ThemeSetting => {
   const theme = localStorage.getItem(themeKey)
-  if (theme === 'dark') return true
-  if (theme === 'light') return false
-  return null
+  return theme === 'dark' || theme === 'light' ? theme : 'system'
 }
 
 export const setStoredGameMode = (isHard: boolean) => {

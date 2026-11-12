@@ -5,36 +5,41 @@ import classNames from 'classnames'
 type Props = {
   isOpen: boolean
   message: string
-  variant?: 'success' | 'error'
+  variant?: 'success' | 'error' | 'info'
 }
 
+// Toast just below the header, above the board. Sits over open sheets too.
 export const Alert = ({ isOpen, message, variant = 'error' }: Props) => {
   const classes = classNames(
-    'fixed z-20 top-[max(1.25rem,env(safe-area-inset-top))] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[var(--container-game)] rounded-2xl shadow-soft-lg pointer-events-auto overflow-hidden text-white',
+    'max-w-full rounded-full px-4 py-2 text-center text-sm leading-snug font-medium text-balance break-words shadow-soft-lg',
     {
-      'bg-[var(--danger-bg-color)]': variant === 'error',
-      'bg-[var(--accent-color)]': variant === 'success',
+      'bg-[var(--danger-bg-color)] text-white': variant === 'error',
+      'bg-[var(--accent-color)] text-white': variant === 'success',
+      'bg-nature-stone-900 text-white dark:bg-nature-stone-50 dark:text-nature-stone-900':
+        variant === 'info',
     },
   )
 
   return (
-    <Transition
-      show={isOpen}
-      as={Fragment}
-      enter="ease-out duration-300 transition"
-      enterFrom="opacity-0"
-      enterTo="opacity-100"
-      leave="transition ease-in duration-100"
-      leaveFrom="opacity-100"
-      leaveTo="opacity-0"
-    >
-      <div className={classes} role="alert" aria-live="assertive">
-        <div className="px-4 py-3">
-          <p className="text-center text-sm leading-snug font-medium text-balance break-words">
-            {message}
-          </p>
+    <div className="pointer-events-none fixed inset-x-0 top-[calc(max(0.5rem,env(safe-area-inset-top))+3.75rem)] z-20 flex justify-center px-4">
+      <Transition
+        show={isOpen}
+        as={Fragment}
+        enter="ease-out duration-200 transition"
+        enterFrom="opacity-0 -translate-y-1"
+        enterTo="opacity-100 translate-y-0"
+        leave="transition ease-in duration-100"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+      >
+        <div
+          className={classes}
+          role={variant === 'error' ? 'alert' : 'status'}
+          aria-live={variant === 'error' ? 'assertive' : 'polite'}
+        >
+          {message}
         </div>
-      </div>
-    </Transition>
+      </Transition>
+    </div>
   )
 }

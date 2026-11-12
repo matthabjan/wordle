@@ -29,11 +29,20 @@ const AUTH_WINDOW_MS = envInt('AUTH_WINDOW_SECONDS', 900) * 1000
 // Set ALLOW_LEGACY_AUTH=false once every client sends the Authorization header.
 const ALLOW_LEGACY_AUTH = process.env.ALLOW_LEGACY_AUTH !== 'false'
 const MAX_TRACKED_CLIENTS = 10_000
+// `year` (default): the overall ranking restarts every calendar year and past
+// years stay available. `none`: one never-resetting ranking, as before 2.5.
+const ROUNDS_MODE =
+  process.env.LEADERBOARD_ROUNDS?.trim().toLowerCase() === 'none'
+    ? 'none'
+    : 'year'
 
 const redactUrl = (url) =>
   String(url).replace(/([?&]passphrase=)[^&]*/gi, '$1[redacted]')
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+// A round is a calendar year (`2026`) or `all` for the all-time ranking.
+const ROUND_RE = /^(\d{4}|all)$/
+const PODIUM_SIZE = 3
 
 const isValidName = (name) =>
   typeof name === 'string' && name.trim().length > 0 && name.trim().length <= 40
@@ -52,6 +61,8 @@ export const buildApp = ({
   maxFailures = AUTH_MAX_FAILURES,
   windowMs = AUTH_WINDOW_MS,
   allowLegacyAuth = ALLOW_LEGACY_AUTH,
+  rounds = ROUNDS_MODE,
+  now = () => new Date(),
 } = {}) => {
   if (!passphrase) {
     throw new Error('LEADERBOARD_PASSPHRASE env var is required')
@@ -98,6 +109,7 @@ export const buildApp = ({
         2
       ) AS averageGuesses
     FROM results
+    WHERE (@from IS NULL OR date >= @from) AND (@to IS NULL OR date < @to)
     GROUP BY name
     ORDER BY
       points DESC,
@@ -106,6 +118,20 @@ export const buildApp = ({
       averageGuesses ASC,
       name COLLATE NOCASE ASC
   `)
+
+  const selectYears = db.prepare(`
+    SELECT DISTINCT substr(date, 1, 4) AS year FROM results ORDER BY year DESC
+  `)
+
+  // Rounds are derived from the result dates, so rows are never rewritten.
+  const standingsFor = (round) => {
+    if (round === 'all') return selectOverall.all({ from: null, to: null })
+    const year = Number(round)
+    return selectOverall.all({
+      from: `${round}-01-01`,
+      to: `${String(year + 1).padStart(4, '0')}-01-01`,
+    })
+  }
 
   // Constant-time compare so a public passphrase check doesn't leak
   // length/prefix via timing.
@@ -266,12 +292,33 @@ export const buildApp = ({
   app.get('/api/leaderboard/overall', async (request, reply) => {
     if (!authorize(request, reply)) return reply
 
+    const { name, round } = request.query ?? {}
+    if (!isValidName(name) || (round !== undefined && !ROUND_RE.test(round))) {
+      return reply.code(400).send({ error: 'invalid_payload' })
+    }
+
+    // Clients that predate rounds send no `round` and get the running one.
+    const fallback = rounds === 'year' ? String(now().getFullYear()) : 'all'
+    return reply.send(standingsFor(round ?? fallback))
+  })
+
+  app.get('/api/leaderboard/rounds', async (request, reply) => {
+    if (!authorize(request, reply)) return reply
+
     const { name } = request.query ?? {}
     if (!isValidName(name)) {
       return reply.code(400).send({ error: 'invalid_payload' })
     }
 
-    return reply.send(selectOverall.all())
+    if (rounds !== 'year') return reply.send({ mode: 'none', rounds: [] })
+
+    return reply.send({
+      mode: 'year',
+      rounds: selectYears.all().map(({ year }) => ({
+        id: year,
+        top: standingsFor(year).slice(0, PODIUM_SIZE),
+      })),
+    })
   })
 
   return app

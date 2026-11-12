@@ -9,7 +9,7 @@ import {
 } from 'react'
 import { ALERT_TIME_MS } from '../constants/settings'
 
-type AlertStatus = 'success' | 'error' | undefined
+type AlertStatus = 'success' | 'error' | 'info' | undefined
 
 type ShowOptions = {
   persist?: boolean
@@ -24,6 +24,8 @@ type AlertContextValue = {
   isVisible: boolean
   showSuccess: (message: string, options?: ShowOptions) => void
   showError: (message: string, options?: ShowOptions) => void
+  // Neutral hint, e.g. a rejected guess. `showError` is for real failures.
+  showInfo: (message: string, options?: ShowOptions) => void
 }
 
 export const AlertContext = createContext<AlertContextValue | null>(null)
@@ -102,6 +104,13 @@ export const AlertProvider = ({ children }: Props) => {
     [show],
   )
 
+  const showInfo = useCallback(
+    (newMessage: string, options?: ShowOptions) => {
+      show('info', newMessage, options)
+    },
+    [show],
+  )
+
   return (
     <AlertContext.Provider
       value={{
@@ -110,6 +119,7 @@ export const AlertProvider = ({ children }: Props) => {
         isVisible,
         showError,
         showSuccess,
+        showInfo,
       }}
     >
       {children}

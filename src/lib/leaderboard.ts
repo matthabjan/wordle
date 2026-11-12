@@ -33,6 +33,21 @@ export type LeaderboardResult =
 export type OverallLeaderboardResult =
   { status: 'ok'; entries: OverallLeaderboardEntry[] } | Failure
 
+// A round is one calendar year of the overall ranking, identified by the year
+// (`2026`). `ALL_ROUNDS` asks for the all-time ranking instead.
+export const ALL_ROUNDS = 'all'
+
+export type LeaderboardRound = {
+  id: string
+  // The first three of the round's standings.
+  top: OverallLeaderboardEntry[]
+}
+
+// `mode: 'none'` means the server keeps one never-resetting ranking — either
+// by configuration or because it predates rounds.
+export type RoundsResult =
+  { status: 'ok'; mode: 'year' | 'none'; rounds: LeaderboardRound[] } | Failure
+
 export type SubmittedResult = {
   date: string
   guesses: string[]
@@ -50,9 +65,13 @@ export type LeaderboardTransport = {
     identity: LeaderboardIdentity,
     date: string,
   ) => Promise<LeaderboardResult>
+  // Without `round` the server picks: the running round, or all-time when it
+  // has no rounds.
   overallStandings: (
     identity: LeaderboardIdentity,
+    round?: string,
   ) => Promise<OverallLeaderboardResult>
+  rounds: (identity: LeaderboardIdentity) => Promise<RoundsResult>
 }
 
 const API_BASE = '/api'
@@ -63,11 +82,11 @@ const authHeaders = (passphrase: string) => ({
   Authorization: `Bearer ${encodeURIComponent(passphrase)}`,
 })
 
-const getEntries = async <T>(
+const getJson = async <T>(
   path: string,
   query: Record<string, string>,
   passphrase: string,
-): Promise<{ status: 'ok'; entries: T[] } | Failure> => {
+): Promise<{ status: 'ok'; data: T } | { status: 'not_found' } | Failure> => {
   try {
     const url = new URL(`${API_BASE}${path}`, window.location.origin)
     for (const [key, value] of Object.entries(query)) {
@@ -78,12 +97,23 @@ const getEntries = async <T>(
       headers: authHeaders(passphrase),
     })
     if (response.status === 401) return { status: 'unauthorized' }
+    if (response.status === 404) return { status: 'not_found' }
     if (!response.ok) return { status: 'unavailable' }
 
-    return { status: 'ok', entries: (await response.json()) as T[] }
+    return { status: 'ok', data: (await response.json()) as T }
   } catch {
     return { status: 'unavailable' }
   }
+}
+
+const getEntries = async <T>(
+  path: string,
+  query: Record<string, string>,
+  passphrase: string,
+): Promise<{ status: 'ok'; entries: T[] } | Failure> => {
+  const result = await getJson<T[]>(path, query, passphrase)
+  if (result.status === 'ok') return { status: 'ok', entries: result.data }
+  return result.status === 'not_found' ? { status: 'unavailable' } : result
 }
 
 export const httpTransport: LeaderboardTransport = {
@@ -109,12 +139,26 @@ export const httpTransport: LeaderboardTransport = {
       { date, name: identity.name },
       identity.passphrase,
     ),
-  overallStandings: (identity) =>
+  overallStandings: (identity, round) =>
     getEntries<OverallLeaderboardEntry>(
       '/leaderboard/overall',
-      { name: identity.name },
+      round ? { name: identity.name, round } : { name: identity.name },
       identity.passphrase,
     ),
+  rounds: async (identity) => {
+    const result = await getJson<{
+      mode?: unknown
+      rounds?: LeaderboardRound[]
+    }>('/leaderboard/rounds', { name: identity.name }, identity.passphrase)
+    // A server from before rounds has no such route.
+    if (result.status === 'not_found') {
+      return { status: 'ok', mode: 'none', rounds: [] }
+    }
+    if (result.status !== 'ok') return result
+    return result.data.mode === 'year' && Array.isArray(result.data.rounds)
+      ? { status: 'ok', mode: 'year', rounds: result.data.rounds }
+      : { status: 'ok', mode: 'none', rounds: [] }
+  },
 }
 
 const readIdentity = (): LeaderboardIdentity | null => {
@@ -207,12 +251,22 @@ export const createLeaderboard = (transport: LeaderboardTransport) => {
         .catch((): Failure => ({ status: 'unavailable' }))
     },
 
-    overallStandings: async (): Promise<OverallLeaderboardResult> => {
+    overallStandings: async (
+      round?: string,
+    ): Promise<OverallLeaderboardResult> => {
       await submitIfUnconfirmed()
       const identity = readIdentity()
       if (!identity) return { status: 'unavailable' }
       return transport
-        .overallStandings(identity)
+        .overallStandings(identity, round)
+        .catch((): Failure => ({ status: 'unavailable' }))
+    },
+
+    rounds: async (): Promise<RoundsResult> => {
+      const identity = readIdentity()
+      if (!identity) return { status: 'unavailable' }
+      return transport
+        .rounds(identity)
         .catch((): Failure => ({ status: 'unavailable' }))
     },
   }

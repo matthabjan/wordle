@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 import App from './App'
-import { GAME_SUBTITLE, GAME_TITLE } from './constants/strings'
+import { GAME_EDITION_TEXT, GAME_TITLE } from './constants/strings'
 import { AlertProvider } from './context/AlertContext'
 import { getWordOfDay } from './lib/words'
 
@@ -18,8 +18,8 @@ test('renders App component', async () => {
   )
 
   expect(await screen.findByText(GAME_TITLE)).toBeInTheDocument()
-  expect(screen.getByText(GAME_SUBTITLE)).toBeInTheDocument()
-  expect(GAME_SUBTITLE).toMatch(/^German Edition \d+\.\d+$/)
+  expect(screen.getByText(/^Nr\. \d+ · \d{1,2}\. \S+$/)).toBeInTheDocument()
+  expect(GAME_EDITION_TEXT).toMatch(/^German Edition \d+\.\d+$/)
 })
 
 test('submits a finished game to the leaderboard when it is loaded', async () => {
