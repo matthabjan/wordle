@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ALERT_TIME_MS,
   GAME_LOST_INFO_DELAY,
@@ -14,6 +14,17 @@ import {
   WORD_NOT_FOUND_MESSAGE,
 } from '../constants/strings'
 import { useAlert } from '../context/AlertContext'
+import {
+  deleteLetter,
+  getGameResult,
+  moveCursor as moveGameCursor,
+  setCursor as setGameCursor,
+  setHardMode,
+  startGame,
+  submitGuess,
+  SubmitOutcome,
+  typeLetter,
+} from '../lib/game'
 import { vibrate } from '../lib/haptics'
 import {
   getStoredGameMode,
@@ -22,18 +33,17 @@ import {
   setStoredGameMode,
 } from '../lib/localStorage'
 import { addStatsForCompletedGame, loadStats } from '../lib/stats'
-import {
-  findFirstUnusedReveal,
-  isWinningWord,
-  isWordInWordList,
-} from '../lib/words'
 
-const emptyRow = (): (string | null)[] =>
-  Array.from({ length: MAX_WORD_LENGTH }, () => null)
+// How long the tiles of a submitted guess take to flip.
+const REVEAL_DURATION_MS = REVEAL_TIME_MS * MAX_WORD_LENGTH
 
-type RowState = {
-  letters: (string | null)[]
-  cursor: number
+const rejectionMessage = (
+  outcome: Extract<SubmitOutcome, { kind: 'rejected' }>,
+) => {
+  if (outcome.reason === 'hard_mode') return outcome.message
+  return outcome.reason === 'not_enough_letters'
+    ? NOT_ENOUGH_LETTERS_MESSAGE
+    : WORD_NOT_FOUND_MESSAGE
 }
 
 type Options = {
@@ -50,15 +60,17 @@ export const useGameState = ({
   const { showError: showErrorAlert, showSuccess: showSuccessAlert } =
     useAlert()
 
-  const [row, setRow] = useState<RowState>({ letters: emptyRow(), cursor: 0 })
-  const [isGameWon, setIsGameWon] = useState(false)
-  const [isGameLost, setIsGameLost] = useState(false)
+  const [game, setGame] = useState(() =>
+    startGame({ solution, solutionIndex, isHardMode: getStoredGameMode() }),
+  )
   const [currentRowClass, setCurrentRowClass] = useState('')
   const [isRevealing, setIsRevealing] = useState(false)
-  const [guesses, setGuesses] = useState<string[]>([])
   const [stats, setStats] = useState(() => loadStats())
-  const [isHardMode, setIsHardMode] = useState(() => getStoredGameMode())
   const [hasRestored, setHasRestored] = useState(false)
+
+  const isGameWon = game.status === 'won'
+  const isGameLost = game.status === 'lost'
+  const result = useMemo(() => getGameResult(game), [game])
 
   const timersRef = useRef<number[]>([])
 
@@ -80,45 +92,39 @@ export const useGameState = ({
   // Restore / reset game when the daily solution changes
   useEffect(() => {
     clearTimers()
-    setRow({ letters: emptyRow(), cursor: 0 })
     setCurrentRowClass('')
     setIsRevealing(false)
 
     const loaded = loadGameStateFromLocalStorage()
-    if (loaded?.solution !== solution) {
-      setGuesses([])
-      setIsGameWon(false)
-      setIsGameLost(false)
-      setHasRestored(true)
-      return
-    }
+    const restored = startGame({
+      solution,
+      solutionIndex,
+      isHardMode: getStoredGameMode(),
+      guesses: loaded?.solution === solution ? loaded.guesses : [],
+    })
+    setGame(restored)
 
-    const gameWasWon = loaded.guesses.includes(solution)
-    setGuesses(loaded.guesses)
-    setIsGameWon(gameWasWon)
-    const lost = loaded.guesses.length === MAX_CHALLENGES && !gameWasWon
-    setIsGameLost(lost)
-
-    if (lost) {
+    if (restored.status === 'lost') {
       showErrorAlert(CORRECT_WORD_MESSAGE(solution), { persist: true })
     }
 
     setHasRestored(true)
-  }, [solution, clearTimers, showErrorAlert])
+  }, [solution, solutionIndex, clearTimers, showErrorAlert])
 
   useEffect(() => {
     if (!hasRestored) return
-    saveGameStateToLocalStorage({ guesses, solution })
-  }, [guesses, solution, hasRestored])
+    saveGameStateToLocalStorage({
+      guesses: game.guesses,
+      solution: game.solution,
+    })
+  }, [game.guesses, game.solution, hasRestored])
 
   useEffect(() => {
     if (isGameWon) {
       const winMessage =
         WIN_MESSAGES[Math.floor(Math.random() * WIN_MESSAGES.length)]
-      const delayMs = REVEAL_TIME_MS * MAX_WORD_LENGTH
-
       showSuccessAlert(winMessage, {
-        delayMs,
+        delayMs: REVEAL_DURATION_MS,
         onClose: () => onOpenStats(),
       })
       vibrate([20, 40, 20])
@@ -137,141 +143,85 @@ export const useGameState = ({
 
   const handleHardMode = useCallback(
     (isHard: boolean) => {
-      if (guesses.length === 0 || getStoredGameMode()) {
-        setIsHardMode(isHard)
-        setStoredGameMode(isHard)
-      } else {
+      if (!setHardMode(game, isHard).allowed) {
         showErrorAlert(HARD_MODE_ALERT_MESSAGE)
+        return
       }
+      setGame((prev) => setHardMode(prev, isHard).game)
+      setStoredGameMode(isHard)
     },
-    [guesses.length, showErrorAlert],
+    [game, showErrorAlert],
   )
 
+  // Input is not forwarded to the game while the last guess is being revealed.
   const setCursor = useCallback(
     (index: number) => {
-      if (isGameWon || isGameLost || isRevealing) return
-      if (index < 0 || index >= MAX_WORD_LENGTH) return
-      setRow((prev) => ({ ...prev, cursor: index }))
+      if (isRevealing) return
+      setGame((prev) => setGameCursor(prev, index))
     },
-    [isGameWon, isGameLost, isRevealing],
+    [isRevealing],
   )
 
   const onChar = useCallback(
     (value: string) => {
-      if (
-        isRevealing ||
-        isGameWon ||
-        isGameLost ||
-        guesses.length >= MAX_CHALLENGES
-      ) {
-        return
-      }
-
-      setRow((prev) => {
-        const letters = [...prev.letters]
-        letters[prev.cursor] = value
-
-        let cursor = prev.cursor
-        let foundEmpty = false
-        for (let i = prev.cursor + 1; i < MAX_WORD_LENGTH; i++) {
-          if (letters[i] === null) {
-            cursor = i
-            foundEmpty = true
-            break
-          }
-        }
-        if (!foundEmpty) {
-          cursor = Math.min(prev.cursor + 1, MAX_WORD_LENGTH - 1)
-        }
-
-        return { letters, cursor }
-      })
+      if (isRevealing) return
+      setGame((prev) => typeLetter(prev, value))
     },
-    [guesses.length, isGameLost, isGameWon, isRevealing],
+    [isRevealing],
   )
 
   const onDelete = useCallback(() => {
-    if (isRevealing || isGameWon || isGameLost) return
+    if (isRevealing) return
+    setGame((prev) => deleteLetter(prev))
+  }, [isRevealing])
 
-    setRow((prev) => {
-      const letters = [...prev.letters]
-      if (letters[prev.cursor] !== null) {
-        letters[prev.cursor] = null
-        return { letters, cursor: prev.cursor }
-      }
-      if (prev.cursor > 0) {
-        const cursor = prev.cursor - 1
-        letters[cursor] = null
-        return { letters, cursor }
-      }
-      return prev
-    })
-  }, [isGameLost, isGameWon, isRevealing])
+  const moveCursor = useCallback(
+    (delta: number) => {
+      if (isRevealing) return
+      setGame((prev) => moveGameCursor(prev, delta))
+    },
+    [isRevealing],
+  )
 
   const onEnter = useCallback(() => {
-    if (isGameWon || isGameLost || isRevealing) return
+    if (isRevealing) return
 
-    const filled = row.letters.every((letter) => letter !== null)
-    if (!filled) {
-      showErrorAlert(NOT_ENOUGH_LETTERS_MESSAGE)
+    const { game: nextGame, outcome } = submitGuess(game)
+
+    if (outcome.kind === 'ignored') return
+
+    if (outcome.kind === 'rejected') {
+      showErrorAlert(rejectionMessage(outcome))
       jiggle()
       return
-    }
-
-    const currentGuess = row.letters.join('')
-
-    if (!isWordInWordList(currentGuess)) {
-      showErrorAlert(WORD_NOT_FOUND_MESSAGE)
-      jiggle()
-      return
-    }
-
-    if (isHardMode) {
-      const firstMissingReveal = findFirstUnusedReveal(
-        currentGuess,
-        guesses,
-        solution,
-      )
-      if (firstMissingReveal) {
-        showErrorAlert(firstMissingReveal)
-        jiggle()
-        return
-      }
     }
 
     setIsRevealing(true)
-    schedule(() => setIsRevealing(false), REVEAL_TIME_MS * MAX_WORD_LENGTH)
+    schedule(() => setIsRevealing(false), REVEAL_DURATION_MS)
+    setGame(nextGame)
 
-    const winningWord = isWinningWord(currentGuess, solution)
-    const nextGuesses = [...guesses, currentGuess]
-
-    setGuesses(nextGuesses)
-    setRow({ letters: emptyRow(), cursor: 0 })
-
-    if (winningWord) {
-      setStats(addStatsForCompletedGame(stats, guesses.length, solutionIndex))
-      setIsGameWon(true)
-      return
+    if (outcome.kind === 'won') {
+      // Stats count wins by the zero-based row of the winning guess.
+      setStats(
+        addStatsForCompletedGame(
+          stats,
+          nextGame.guesses.length - 1,
+          solutionIndex,
+        ),
+      )
     }
 
-    if (guesses.length === MAX_CHALLENGES - 1) {
-      setStats(
-        addStatsForCompletedGame(stats, guesses.length + 1, solutionIndex),
-      )
-      setIsGameLost(true)
+    if (outcome.kind === 'lost') {
+      setStats(addStatsForCompletedGame(stats, MAX_CHALLENGES, solutionIndex))
       showErrorAlert(CORRECT_WORD_MESSAGE(solution), {
         persist: true,
-        delayMs: REVEAL_TIME_MS * MAX_WORD_LENGTH + 1,
+        delayMs: REVEAL_DURATION_MS + 1,
       })
     }
   }, [
-    guesses,
-    isGameLost,
-    isGameWon,
-    isHardMode,
+    game,
     isRevealing,
     jiggle,
-    row.letters,
     schedule,
     showErrorAlert,
     solution,
@@ -279,27 +229,17 @@ export const useGameState = ({
     stats,
   ])
 
-  const moveCursor = useCallback(
-    (delta: number) => {
-      if (isRevealing || isGameWon || isGameLost) return
-      setRow((prev) => ({
-        ...prev,
-        cursor: Math.max(0, Math.min(MAX_WORD_LENGTH - 1, prev.cursor + delta)),
-      }))
-    },
-    [isGameLost, isGameWon, isRevealing],
-  )
-
   return {
-    currentGuess: row.letters,
-    cursorIndex: row.cursor,
-    guesses,
+    currentGuess: game.currentRow,
+    cursorIndex: game.cursor,
+    guesses: game.guesses,
     isGameWon,
     isGameLost,
+    result,
     isRevealing,
     currentRowClass,
     stats,
-    isHardMode,
+    isHardMode: game.isHardMode,
     handleHardMode,
     onChar,
     onDelete,

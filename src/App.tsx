@@ -3,7 +3,7 @@ import {
   Cog6ToothIcon,
   InformationCircleIcon,
 } from '@heroicons/react/24/outline'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { AlertContainer } from './components/alerts/AlertContainer'
 import { Grid } from './components/grid/Grid'
 import { Keyboard } from './components/keyboard/Keyboard'
@@ -21,12 +21,8 @@ import { useAlert } from './context/AlertContext'
 import { useGameState } from './hooks/useGameState'
 import { useTheme } from './hooks/useTheme'
 import { useWordOfDay } from './hooks/useWordOfDay'
-import {
-  getLeaderboardIdentity,
-  submitLeaderboardResult,
-} from './lib/leaderboard'
+import { leaderboard } from './lib/leaderboard'
 import { loadGameStateFromLocalStorage } from './lib/localStorage'
-import { getDateForSolutionIndex } from './lib/words'
 
 const headerIconClass =
   'flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-nature-stone-700 transition hover:bg-nature-stone-200/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 dark:text-nature-stone-200 dark:hover:bg-nature-stone-800 dark:focus-visible:ring-offset-nature-stone-900'
@@ -55,6 +51,7 @@ function App() {
     guesses,
     isGameWon,
     isGameLost,
+    result,
     isRevealing,
     currentRowClass,
     stats,
@@ -79,23 +76,11 @@ function App() {
     return () => window.removeEventListener('pwa-update-available', onUpdate)
   }, [])
 
-  const submittedIndexRef = useRef<number | null>(null)
-
+  // Replayed on every load of a finished game; the leaderboard only submits
+  // what the server has not confirmed yet.
   useEffect(() => {
-    if (!isGameWon && !isGameLost) return
-    if (submittedIndexRef.current === solutionIndex) return
-
-    const identity = getLeaderboardIdentity()
-    if (!identity) return
-
-    submittedIndexRef.current = solutionIndex
-    submitLeaderboardResult({
-      identity,
-      date: getDateForSolutionIndex(solutionIndex),
-      guesses,
-      won: isGameWon,
-    })
-  }, [isGameWon, isGameLost, solutionIndex, guesses])
+    if (result) leaderboard.reportResult(result)
+  }, [result])
 
   const handleShareSuccess = () => showSuccessAlert(GAME_COPIED_MESSAGE)
   const handleShareFailure = () => showErrorAlert(SHARE_FAILED_MESSAGE)

@@ -1,7 +1,14 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import { afterEach, expect, test, vi } from 'vitest'
 import App from './App'
 import { GAME_SUBTITLE, GAME_TITLE } from './constants/strings'
 import { AlertProvider } from './context/AlertContext'
+import { getWordOfDay } from './lib/words'
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+  localStorage.clear()
+})
 
 test('renders App component', async () => {
   render(
@@ -13,4 +20,33 @@ test('renders App component', async () => {
   expect(await screen.findByText(GAME_TITLE)).toBeInTheDocument()
   expect(screen.getByText(GAME_SUBTITLE)).toBeInTheDocument()
   expect(GAME_SUBTITLE).toMatch(/^German Edition \d+\.\d+$/)
+})
+
+test('submits a finished game to the leaderboard when it is loaded', async () => {
+  const { solution } = getWordOfDay()
+  localStorage.setItem(
+    'gameState',
+    JSON.stringify({ guesses: [solution], solution }),
+  )
+  localStorage.setItem('leaderboardName', 'Ada')
+  localStorage.setItem('leaderboardPassphrase', 'secret')
+  const fetchMock = vi
+    .fn()
+    .mockImplementation(async () => new Response(null, { status: 204 }))
+  vi.stubGlobal('fetch', fetchMock)
+
+  render(
+    <AlertProvider>
+      <App />
+    </AlertProvider>,
+  )
+
+  await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+  const [url, init] = fetchMock.mock.calls[0]
+  expect(String(url)).toContain('/api/results')
+  expect(JSON.parse(init.body)).toMatchObject({
+    name: 'Ada',
+    guesses: [solution],
+    won: true,
+  })
 })
