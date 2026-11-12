@@ -46,12 +46,12 @@ Versioning: SemVer from root `package.json`; `server/package.json` must carry th
 
 ## Leaderboard (optional, do not break)
 
-- Lives in `src/lib/leaderboard.ts` + `src/components/stats/Leaderboard.tsx` (folded into `StatsModal`), backed by `server/` (Fastify + SQLite) and proxied same-origin at `/api/*` (see `docker/etc/nginx/conf.d/default.conf`).
+- Lives in `src/lib/leaderboard.ts` (participation module behind a `LeaderboardTransport` seam: `httpTransport` in the app, `src/lib/leaderboardInMemory.ts` in tests) + `src/components/stats/Leaderboard.tsx` (folded into `StatsModal`), backed by `server/` (Fastify + SQLite) and proxied same-origin at `/api/*` (see `docker/etc/nginx/conf.d/default.conf`).
 - Gate is a single shared passphrase (`LEADERBOARD_PASSPHRASE` env var on the server) — no per-user accounts. Anyone who knows it can join under any name; everyone else just plays without it. The client sends it as `Authorization: Bearer <encodeURIComponent(passphrase)>` (never in the URL); the server still accepts the legacy query/body form unless `ALLOW_LEGACY_AUTH=false`, and answers `429` after too many failed attempts per client (`AUTH_MAX_FAILURES`, `AUTH_WINDOW_SECONDS`, `TRUST_PROXY` — see `DOCKER.md`).
 - Identity (`leaderboardName` / `leaderboardPassphrase`) is cached in `localStorage`; distinct keys from the core game state, additive only.
 - Reveal is gated server-side: a viewer only receives other players' guess grids once they've submitted their own result for that date (see `GET /api/leaderboard` in `server/index.js`).
 - Overall rankings come from `GET /api/leaderboard/overall` and are derived server-side from daily rows: wins score 6 points for one guess down to 1 point for six guesses; losses score 0.
-- Must fail silently and never block the core game: submission (`submitLeaderboardResult`) swallows errors, and nginx resolves the `leaderboard-api` upstream at request time (not at startup) so the app still serves the game if that container is absent or down.
+- Must fail silently and never block the core game: nothing in `createLeaderboard` throws (a failed submission is retried the next time standings are requested), and nginx resolves the `leaderboard-api` upstream at request time (not at startup) so the app still serves the game if that container is absent or down.
 - Every `(date, name)` submission is upserted and never deleted, so the overall leaderboard remains derivable without a separate aggregate table.
 
 ## Changing word length or lists

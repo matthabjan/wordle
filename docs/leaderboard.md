@@ -11,7 +11,7 @@ The Stats modal can show **daily** and **all-time** rankings for everyone who kn
 ## How it works
 
 - **Joining:** a player opens Stats and enters a display name and the shared passphrase. Both are cached in `localStorage` on that device. There are no accounts: anyone who knows the passphrase can join under any name.
-- **Submitting:** the result is posted automatically when a game ends. Each person has one row per day, keyed by `(date, name)` and updated if they submit again.
+- **Submitting:** the result is posted automatically when a game ends, or when you join after finishing. A submission that failed (e.g. offline) is retried the next time the leaderboard is opened. Each person has one row per day, keyed by `(date, name)` and updated if they submit again.
 - **Spoiler protection:** before you've finished the day's word, you only see names and guess counts. The full colour grids unlock once your own result for that day is stored.
 - **Overall score:** a win scores 6 points for one guess, down to 1 point for six guesses. A loss scores 0. Ties are broken by number of wins, then lower average guesses, then name.
 - **Fails silently:** if the API is missing, stopped or unreachable, submitting does nothing and the section shows *„Bestenliste derzeit nicht verfügbar.“*. The game is never blocked.
