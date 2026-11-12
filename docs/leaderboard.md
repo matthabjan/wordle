@@ -2,7 +2,7 @@
 
 ← [README](../README.md) · [Development](development.md) · [Word lists](word-lists.md) · [Deployment](../DOCKER.md)
 
-The Stats modal can show **daily** and **all-time** rankings for everyone who knows a shared passphrase. It's backed by a small self-hosted service in [`server/`](../server) (Fastify + SQLite). The game works the same whether or not the service is deployed.
+The Stats sheet can show **daily** and **yearly** rankings, plus an archive of past years and an all-time table, for everyone who knows a shared passphrase. It's backed by a small self-hosted service in [`server/`](../server) (Fastify + SQLite). The game works the same whether or not the service is deployed.
 
 <p align="center">
   <img src="screenshots/stats-leaderboard.png" alt="Daily leaderboard in the Stats modal" width="300">
@@ -14,8 +14,9 @@ The Stats modal can show **daily** and **all-time** rankings for everyone who kn
 - **Submitting:** the result is posted automatically when a game ends, or when you join after finishing. A submission that failed (e.g. offline) is retried the next time the leaderboard is opened. Each person has one row per day, keyed by `(date, name)` and updated if they submit again.
 - **Spoiler protection:** before you've finished the day's word, you only see names and guess counts. The full colour grids unlock once your own result for that day is stored.
 - **Overall score:** a win scores 6 points for one guess, down to 1 point for six guesses. A loss scores 0. Ties are broken by number of wins, then lower average guesses, then name.
+- **Yearly rounds:** the overall ranking restarts every 1 January. A result counts for the year of its puzzle date. Finished years and an all-time table (*„Ewige Tabelle“*) stay in the *Archiv* tab; players' personal statistics on their devices are not affected. Set `LEADERBOARD_ROUNDS=none` to keep one never-resetting ranking.
 - **Fails silently:** if the API is missing, stopped or unreachable, submitting does nothing and the section shows *„Bestenliste derzeit nicht verfügbar.“*. The game is never blocked.
-- **Data retention:** rows are kept forever, so the all-time ranking can always be recomputed from the daily results.
+- **Data retention:** rows are kept forever, so every year's ranking and the all-time ranking can always be recomputed from the daily results. Starting a new year changes or deletes nothing.
 
 ## Running it
 
@@ -37,6 +38,7 @@ The app's nginx proxies `/api/` to the host name `leaderboard-api` and resolves 
 | `AUTH_MAX_FAILURES` | `10` | Failed passphrase attempts per client before the API answers `429`. `0` turns the limit off. |
 | `AUTH_WINDOW_SECONDS` | `900` | Length of the window for failed attempts |
 | `TRUST_PROXY` | unset | Proxies whose `X-Forwarded-For` header is trusted (IPs, CIDRs or keywords such as `uniquelocal`). Set this behind nginx/Traefik so the limit applies per client instead of per proxy. |
+| `LEADERBOARD_ROUNDS` | `year` | `year` restarts the overall ranking every calendar year. `none` keeps a single never-resetting ranking and hides the archive. |
 | `ALLOW_LEGACY_AUTH` | `true` | Also accept the passphrase in the query string or body, as old clients send it. Set to `false` once all devices are updated. |
 
 ## Security model
@@ -81,15 +83,30 @@ Returns the day's entries: winners first, then by number of guesses. `guesses` i
 ]
 ```
 
-### `GET /api/leaderboard/overall?name=<viewer>`
+### `GET /api/leaderboard/overall?name=<viewer>[&round=<YYYY|all>]`
 
-Returns the all-time ranking. Each row is computed from all of that player's daily results.
+Returns a ranking computed from the players' daily results. `round=2026` covers that calendar year and `round=all` everything. Without `round` the server returns the running year (by its own clock), or everything when `LEADERBOARD_ROUNDS=none`. App versions from before yearly rounds send no `round`, so they show the running year too.
 
 ```json
 [
   { "name": "Anna", "gamesPlayed": 42, "wins": 40, "points": 151, "winRate": 95.2, "averageGuesses": 3.23 }
 ]
 ```
+
+### `GET /api/leaderboard/rounds?name=<viewer>`
+
+Lists the years that have results, newest first, each with its first three players. With `LEADERBOARD_ROUNDS=none` it returns `{ "mode": "none", "rounds": [] }`.
+
+```json
+{
+  "mode": "year",
+  "rounds": [
+    { "id": "2026", "top": [{ "name": "Anna", "gamesPlayed": 42, "wins": 40, "points": 151, "winRate": 95.2, "averageGuesses": 3.23 }] }
+  ]
+}
+```
+
+The app treats a `404` here (a server from before yearly rounds) like `mode: none`.
 
 ### Example
 

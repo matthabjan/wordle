@@ -12,8 +12,8 @@ import { SettingsModal } from './components/modals/SettingsModal'
 import { StatsModal } from './components/modals/StatsModal'
 import {
   GAME_COPIED_MESSAGE,
-  GAME_SUBTITLE,
   GAME_TITLE,
+  PUZZLE_LABEL,
   SHARE_FAILED_MESSAGE,
   UPDATE_AVAILABLE_MESSAGE,
 } from './constants/strings'
@@ -23,6 +23,7 @@ import { useTheme } from './hooks/useTheme'
 import { useWordOfDay } from './hooks/useWordOfDay'
 import { leaderboard } from './lib/leaderboard'
 import { loadGameStateFromLocalStorage } from './lib/localStorage'
+import { getDateForSolutionIndex } from './lib/words'
 
 const headerIconClass =
   'flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-nature-stone-700 transition hover:bg-nature-stone-200/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 dark:text-nature-stone-200 dark:hover:bg-nature-stone-800 dark:focus-visible:ring-offset-nature-stone-900'
@@ -32,9 +33,9 @@ function App() {
   const { showError: showErrorAlert, showSuccess: showSuccessAlert } =
     useAlert()
   const {
-    isDarkMode,
+    themeSetting,
     isHighContrastMode,
-    handleDarkMode,
+    handleThemeSetting,
     handleHighContrastMode,
   } = useTheme()
 
@@ -86,15 +87,18 @@ function App() {
   const handleShareFailure = () => showErrorAlert(SHARE_FAILED_MESSAGE)
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-nature-stone-50 pt-[max(0.5rem,env(safe-area-inset-top))] pb-[max(0.5rem,env(safe-area-inset-bottom))] transition-colors duration-300 dark:bg-nature-stone-900">
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-nature-stone-50 select-none [-webkit-touch-callout:none] pt-[max(0.5rem,env(safe-area-inset-top))] pb-[max(0.5rem,env(safe-area-inset-bottom))] transition-colors duration-300 dark:bg-nature-stone-900">
       <div className="game-column flex min-h-0 flex-1 flex-col">
-        <header className="mt-3 mb-4 flex w-full items-center gap-1">
+        <header className="mt-1 mb-2 flex w-full shrink-0 items-center gap-1">
           <div className="min-w-0 grow">
-            <h1 className="truncate font-display text-[clamp(1.5rem,6vw,2.25rem)] leading-tight font-bold tracking-tight text-nature-stone-900 dark:text-nature-stone-50">
+            <h1 className="truncate font-display text-[clamp(1.5rem,6vw,2rem)] leading-tight font-bold tracking-tight text-nature-stone-900 dark:text-nature-stone-50">
               {GAME_TITLE}
             </h1>
             <p className="truncate text-xs font-medium text-nature-stone-500 dark:text-nature-stone-400">
-              {GAME_SUBTITLE}
+              {PUZZLE_LABEL(
+                solutionIndex,
+                getDateForSolutionIndex(solutionIndex),
+              )}
             </p>
           </div>
           <button
@@ -126,7 +130,7 @@ function App() {
         {updateAvailable && (
           <button
             type="button"
-            className="mb-2 w-full rounded-full bg-[var(--accent-color)] px-4 py-2 text-sm leading-snug font-medium text-balance text-white shadow-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-nature-stone-900"
+            className="mb-2 w-full shrink-0 rounded-full bg-[var(--accent-color)] px-4 py-2 text-sm leading-snug font-medium text-balance text-white shadow-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-nature-stone-900"
             onClick={() =>
               window.dispatchEvent(new CustomEvent('pwa-apply-update'))
             }
@@ -135,7 +139,7 @@ function App() {
           </button>
         )}
 
-        <div className="flex flex-1 flex-col items-center justify-center py-2">
+        <div className="board-area flex min-h-0 flex-1 flex-col items-center justify-center py-2">
           <Grid
             guesses={guesses}
             currentGuess={currentGuess}
@@ -184,8 +188,8 @@ function App() {
         handleClose={() => setIsSettingsModalOpen(false)}
         isHardMode={isHardMode}
         handleHardMode={handleHardMode}
-        isDarkMode={isDarkMode}
-        handleDarkMode={handleDarkMode}
+        themeSetting={themeSetting}
+        handleThemeSetting={handleThemeSetting}
         isHighContrastMode={isHighContrastMode}
         handleHighContrastMode={handleHighContrastMode}
       />

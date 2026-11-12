@@ -1,5 +1,7 @@
+import { BackspaceIcon } from '@heroicons/react/24/outline'
 import { useEffect } from 'react'
 import { DELETE_TEXT, ENTER_TEXT } from '../../constants/strings'
+import { vibrate } from '../../lib/haptics'
 import { getStatuses } from '../../lib/statuses'
 import { Key } from './Key'
 
@@ -13,6 +15,22 @@ type Props = {
   isRevealing?: boolean
   solution: string
 }
+
+// Heroicons has no return-key glyph
+const EnterIcon = () => (
+  <svg
+    className="h-6 w-6"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M20 5v7a3 3 0 0 1-3 3H5m0 0 4-4m-4 4 4 4" />
+  </svg>
+)
 
 export const Keyboard = ({
   onChar,
@@ -28,6 +46,7 @@ export const Keyboard = ({
 
   const onClick = (value: string) => {
     if (isRevealing) return
+    vibrate(8)
     if (value === 'ENTER') {
       onEnter()
     } else if (value === 'DELETE') {
@@ -63,7 +82,7 @@ export const Keyboard = ({
   }, [onEnter, onDelete, onChar, onArrowLeft, onArrowRight, isRevealing])
 
   return (
-    <div className="w-full pb-2" role="group" aria-label="Tastatur">
+    <div className="-mx-2 shrink-0 pb-2" role="group" aria-label="Tastatur">
       <div className="mb-1.5 flex w-full">
         {['Q', 'W', 'E', 'R', 'T', 'Z', 'U', 'I', 'O', 'P'].map((key) => (
           <Key
@@ -87,8 +106,8 @@ export const Keyboard = ({
         ))}
       </div>
       <div className="flex w-full">
-        <Key wide value="ENTER" onClick={onClick} ariaLabel={ENTER_TEXT}>
-          {ENTER_TEXT}
+        <Key wide accent value="ENTER" onClick={onClick} ariaLabel={ENTER_TEXT}>
+          <EnterIcon />
         </Key>
         {['Y', 'X', 'C', 'V', 'B', 'N', 'M'].map((key) => (
           <Key
@@ -100,7 +119,7 @@ export const Keyboard = ({
           />
         ))}
         <Key wide value="DELETE" onClick={onClick} ariaLabel={DELETE_TEXT}>
-          {DELETE_TEXT}
+          <BackspaceIcon className="h-6 w-6" aria-hidden="true" />
         </Key>
       </div>
     </div>

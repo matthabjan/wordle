@@ -1,6 +1,6 @@
 import { getGuessStatuses } from './statuses'
 import { GAME_TITLE } from '../constants/strings'
-import { getStoredIsHighContrastMode, getStoredTheme } from './localStorage'
+import { getStoredIsHighContrastMode } from './localStorage'
 import { MAX_CHALLENGES } from '../constants/settings'
 
 const buildShareText = (
@@ -87,7 +87,7 @@ export const shareStatusWithBBCode = async (
 function generateEmojiGridLine(guess: string, solution: string) {
   const status = getGuessStatuses(guess, solution)
   const isHighContrast = getStoredIsHighContrastMode()
-  const isDark = getStoredTheme() === true
+  const isDark = document.documentElement.classList.contains('dark')
 
   return guess
     .split('')

@@ -1,17 +1,26 @@
+import { useEffect, useState } from 'react'
 import Countdown from 'react-countdown'
 import {
+  CORRECT_WORD_INTRO,
   GUESS_DISTRIBUTION_TEXT,
+  LEADERBOARD_TITLE,
   NEW_WORD_TEXT,
+  NO_STATS_TEXT,
+  RESULT_TAB_TEXT,
+  RESULT_WON_TEXT,
   SHARE_SPOILER_TEXT,
   SHARE_TEXT,
   STATISTICS_TITLE,
+  WIN_MESSAGE,
 } from '../../constants/strings'
 import { GameStats } from '../../lib/localStorage'
 import { shareStatus, shareStatusWithBBCode } from '../../lib/share'
 import { getDateForSolutionIndex } from '../../lib/words'
 import { Histogram } from '../stats/Histogram'
 import { Leaderboard } from '../stats/Leaderboard'
+import { MiniGrid } from '../stats/MiniGrid'
 import { StatBar } from '../stats/StatBar'
+import { Tabs } from '../tabs/Tabs'
 import { BaseModal } from './BaseModal'
 
 type Props = {
@@ -29,6 +38,18 @@ type Props = {
   solutionIndex: number
 }
 
+type Tab = 'result' | 'stats' | 'board'
+
+const TAB_ID_PREFIX = 'stats-sheet'
+
+const resultHeadlineClass =
+  'font-display text-2xl leading-tight font-bold text-balance text-nature-stone-900 dark:text-nature-stone-50'
+const resultSublineClass =
+  'mt-1 text-base text-nature-stone-700 dark:text-nature-stone-200'
+
+const focusRing =
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-nature-stone-800'
+
 export const StatsModal = ({
   isOpen,
   handleClose,
@@ -43,89 +64,133 @@ export const StatsModal = ({
   solution,
   solutionIndex,
 }: Props) => {
-  const shareButtonClass =
-    'mt-2 w-full rounded-xl border border-transparent px-4 py-3 text-base font-medium text-white shadow-soft bg-[var(--accent-color)] hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2 sm:text-sm dark:focus-visible:ring-offset-nature-stone-800'
+  const isFinished = isGameWon || isGameLost
+  const [tab, setTab] = useState<Tab>(isFinished ? 'result' : 'stats')
+
+  // Every opening starts on the result once there is one.
+  useEffect(() => {
+    if (isOpen) setTab(isFinished ? 'result' : 'stats')
+  }, [isOpen, isFinished])
+
+  const tabs = [
+    ...(isFinished ? [{ id: 'result', label: RESULT_TAB_TEXT } as const] : []),
+    { id: 'stats', label: STATISTICS_TITLE },
+    { id: 'board', label: LEADERBOARD_TITLE },
+  ] as const
+
+  const share = async (withSpoilers: boolean) => {
+    const args = [
+      guesses,
+      isGameLost,
+      isHardMode,
+      solutionIndex,
+      solution,
+    ] as const
+    try {
+      const result = withSpoilers
+        ? await shareStatusWithBBCode(...args)
+        : await shareStatus(...args)
+      if (result === 'copied') handleShare()
+    } catch {
+      handleShareFailure()
+    }
+  }
 
   return (
     <BaseModal
       title={STATISTICS_TITLE}
+      header={
+        <Tabs
+          tabs={tabs}
+          active={tab}
+          onChange={setTab}
+          label={STATISTICS_TITLE}
+          idPrefix={TAB_ID_PREFIX}
+          variant="underline"
+        />
+      }
       isOpen={isOpen}
       handleClose={handleClose}
     >
-      <StatBar gameStats={gameStats} />
-      {gameStats.totalGames > 0 && (
-        <>
-          <h4 className="mt-4 font-display text-lg leading-6 font-semibold text-nature-stone-900 dark:text-nature-stone-50">
-            {GUESS_DISTRIBUTION_TEXT}
-          </h4>
-          <Histogram gameStats={gameStats} />
-          {(isGameLost || isGameWon) && (
-            <div className="mt-4 dark:text-nature-stone-50">
-              <div className="mb-2">
-                <h5 className="text-sm text-nature-stone-600 dark:text-nature-stone-300">
-                  {NEW_WORD_TEXT}
-                </h5>
-                <Countdown
-                  className="font-display text-lg font-medium text-nature-stone-900 dark:text-nature-stone-50"
-                  date={tomorrow}
-                  daysInHours={true}
-                />
-              </div>
-              <div>
-                <button
-                  type="button"
-                  className={shareButtonClass}
-                  onClick={async () => {
-                    try {
-                      const result = await shareStatus(
-                        guesses,
-                        isGameLost,
-                        isHardMode,
-                        solutionIndex,
-                        solution,
-                      )
-                      if (result === 'copied') {
-                        handleShare()
-                      }
-                    } catch {
-                      handleShareFailure()
-                    }
-                  }}
-                >
-                  {SHARE_TEXT}
-                </button>
-                <button
-                  type="button"
-                  className={`${shareButtonClass} bg-nature-stone-600 hover:bg-nature-stone-700`}
-                  onClick={async () => {
-                    try {
-                      await shareStatusWithBBCode(
-                        guesses,
-                        isGameLost,
-                        isHardMode,
-                        solutionIndex,
-                        solution,
-                      )
-                      handleShare()
-                    } catch {
-                      handleShareFailure()
-                    }
-                  }}
-                >
-                  {SHARE_SPOILER_TEXT}
-                </button>
-              </div>
+      <div
+        id={`${TAB_ID_PREFIX}-${tab}-panel`}
+        role="tabpanel"
+        aria-labelledby={`${TAB_ID_PREFIX}-${tab}-tab`}
+        className="min-h-[22.5rem] pt-3"
+      >
+        {tab === 'result' && (
+          <div className="flex flex-col items-center">
+            {isGameWon ? (
+              <>
+                <p className={resultHeadlineClass}>
+                  {WIN_MESSAGE(solutionIndex, guesses.length)}
+                </p>
+                <p className={resultSublineClass}>
+                  {RESULT_WON_TEXT(guesses.length)}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className={resultSublineClass}>{CORRECT_WORD_INTRO}</p>
+                <p className={`${resultHeadlineClass} tracking-widest`}>
+                  {solution}
+                </p>
+              </>
+            )}
+            <div className="mt-4">
+              <MiniGrid guesses={guesses} solution={solution} size="lg" />
             </div>
-          )}
-        </>
-      )}
-      <Leaderboard
-        date={getDateForSolutionIndex(solutionIndex)}
-        solution={solution}
-        isOpen={isOpen}
-        isGameWon={isGameWon}
-        isGameLost={isGameLost}
-      />
+            <button
+              type="button"
+              className={`mt-5 min-h-12 w-full rounded-xl bg-[var(--accent-color)] px-4 text-base font-medium text-white shadow-soft hover:brightness-110 ${focusRing}`}
+              onClick={() => share(false)}
+            >
+              {SHARE_TEXT}
+            </button>
+            <button
+              type="button"
+              className={`mt-1 min-h-11 w-full rounded-xl px-4 text-sm font-medium text-nature-stone-700 hover:bg-nature-stone-200/70 dark:text-nature-stone-200 dark:hover:bg-nature-stone-700 ${focusRing}`}
+              onClick={() => share(true)}
+            >
+              {SHARE_SPOILER_TEXT}
+            </button>
+            <p className="mt-3 text-sm text-nature-stone-600 dark:text-nature-stone-300">
+              {NEW_WORD_TEXT}{' '}
+              <Countdown
+                className="font-display font-semibold text-nature-stone-900 tabular-nums dark:text-nature-stone-50"
+                date={tomorrow}
+                daysInHours={true}
+              />
+            </p>
+          </div>
+        )}
+        {tab === 'stats' && (
+          <>
+            <StatBar gameStats={gameStats} />
+            {gameStats.totalGames > 0 ? (
+              <>
+                <h3 className="mt-4 font-display text-base leading-6 font-semibold text-nature-stone-900 dark:text-nature-stone-50">
+                  {GUESS_DISTRIBUTION_TEXT}
+                </h3>
+                <Histogram gameStats={gameStats} />
+              </>
+            ) : (
+              <p className="mt-4 text-nature-stone-500 dark:text-nature-stone-400">
+                {NO_STATS_TEXT}
+              </p>
+            )}
+          </>
+        )}
+        {tab === 'board' && (
+          <Leaderboard
+            date={getDateForSolutionIndex(solutionIndex)}
+            solution={solution}
+            isOpen={isOpen}
+            isGameWon={isGameWon}
+            isGameLost={isGameLost}
+          />
+        )}
+      </div>
     </BaseModal>
   )
 }

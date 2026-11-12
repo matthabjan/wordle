@@ -3,3 +3,5 @@ export const MAX_CHALLENGES = 6
 export const ALERT_TIME_MS = 2000
 export const REVEAL_TIME_MS = 350
 export const GAME_LOST_INFO_DELAY = (MAX_WORD_LENGTH + 1) * REVEAL_TIME_MS
+// The reveal, then time for the winning row to bounce
+export const GAME_WON_INFO_DELAY = (MAX_WORD_LENGTH + 3) * REVEAL_TIME_MS

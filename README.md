@@ -27,7 +27,7 @@ Wordle – German Edition is a daily word puzzle in the spirit of Wordle: guess 
 - **Statistics**: tracks streaks and the distribution of guesses per game, stored locally.
 - **Sharing**: share via the system share sheet or the clipboard, with an optional spoiler version for friends.
 - **Installable PWA**: works offline and feels native on iOS and Android home screens.
-- **Optional leaderboard**: daily and all-time rankings for everyone who knows a shared passphrase. Grids only unlock once you've finished the word yourself, and the game is unaffected if the backend is down.
+- **Optional leaderboard**: daily and yearly rankings (with an archive of past years) for everyone who knows a shared passphrase. Grids only unlock once you've finished the word yourself, and the game is unaffected if the backend is down.
 
 ## Quick start
 

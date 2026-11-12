@@ -59,6 +59,7 @@ services:
       - DB_PATH=/data/leaderboard.db
       - TRUST_PROXY=${TRUST_PROXY:-}
       - ALLOW_LEGACY_AUTH=${ALLOW_LEGACY_AUTH:-true}
+      - LEADERBOARD_ROUNDS=${LEADERBOARD_ROUNDS:-year}
     volumes:
       - leaderboard-data:/data
     healthcheck:
