@@ -43,6 +43,7 @@ describe('Leaderboard', () => {
       <Leaderboard
         date="2026-07-21"
         solution="APFEL"
+        guesses={[]}
         isOpen={true}
         isGameWon={false}
         isGameLost={false}
@@ -59,5 +60,47 @@ describe('Leaderboard', () => {
       screen.getByText('3 Spiele · 2 Siege (66,7 %) · Ø Versuche: 2'),
     ).toBeInTheDocument()
     expect(fetchMock.mock.calls[1][0]).toContain('/api/leaderboard/overall')
+  })
+
+  test('submits a finished game when joining afterwards', async () => {
+    localStorage.clear()
+
+    const submitted: unknown[] = []
+    const fetchMock = vi.fn(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        if (String(input).includes('/api/results')) {
+          submitted.push(JSON.parse(String(init?.body)))
+          return new Response(null, { status: 204 })
+        }
+        // Reveal gate: the viewer only shows up once their result is stored.
+        return jsonResponse(
+          submitted.length > 0
+            ? [{ name: 'Ada', won: true, guessCount: 1, guesses: ['APFEL'] }]
+            : [],
+        )
+      },
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const user = userEvent.setup()
+    render(
+      <Leaderboard
+        date="2026-07-21"
+        solution="APFEL"
+        guesses={['APFEL']}
+        isOpen={true}
+        isGameWon={true}
+        isGameLost={false}
+      />,
+    )
+
+    await user.type(screen.getByLabelText('Dein Name'), 'Ada')
+    await user.type(screen.getByLabelText('Passwort'), 'secret')
+    await user.click(screen.getByRole('button', { name: 'Verbinden' }))
+
+    expect(await screen.findByText('1/6')).toBeInTheDocument()
+    expect(submitted).toEqual([
+      { name: 'Ada', date: '2026-07-21', guesses: ['APFEL'], won: true },
+    ])
   })
 })

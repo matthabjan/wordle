@@ -27,6 +27,7 @@ import {
   fetchOverallLeaderboard,
   getLeaderboardIdentity,
   setLeaderboardIdentity,
+  submitLeaderboardResult,
   type LeaderboardEntry,
   type LeaderboardIdentity,
   type OverallLeaderboardEntry,
@@ -36,6 +37,7 @@ import { generateEmojiGrid } from '../../lib/share'
 type Props = {
   date: string
   solution: string
+  guesses: string[]
   isOpen: boolean
   isGameWon: boolean
   isGameLost: boolean
@@ -51,6 +53,7 @@ const numberFormatter = new Intl.NumberFormat('de-DE', {
 export const Leaderboard = ({
   date,
   solution,
+  guesses,
   isOpen,
   isGameWon,
   isGameLost,
@@ -119,15 +122,29 @@ export const Leaderboard = ({
     setSetupError(null)
 
     const candidate = { name, passphrase }
-    const result = await fetchLeaderboard({ identity: candidate, date })
-    setIsJoining(false)
+    let result = await fetchLeaderboard({ identity: candidate, date })
 
     if (result.status === 'unauthorized') {
+      setIsJoining(false)
       setSetupError(LEADERBOARD_WRONG_PASSPHRASE_MESSAGE)
       return
     }
 
     setLeaderboardIdentity(candidate)
+
+    // A game finished before joining was never submitted — send it now, then
+    // refetch so the player's own entry (and the revealed grids) show up.
+    if (isGameWon || isGameLost) {
+      await submitLeaderboardResult({
+        identity: candidate,
+        date,
+        guesses,
+        won: isGameWon,
+      })
+      result = await fetchLeaderboard({ identity: candidate, date })
+    }
+
+    setIsJoining(false)
     setIdentity(candidate)
 
     if (result.status === 'ok') {

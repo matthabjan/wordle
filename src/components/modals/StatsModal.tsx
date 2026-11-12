@@ -122,6 +122,7 @@ export const StatsModal = ({
       <Leaderboard
         date={getDateForSolutionIndex(solutionIndex)}
         solution={solution}
+        guesses={guesses}
         isOpen={isOpen}
         isGameWon={isGameWon}
         isGameLost={isGameLost}
