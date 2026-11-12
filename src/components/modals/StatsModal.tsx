@@ -111,7 +111,7 @@ export const StatsModal = ({
         id={`${TAB_ID_PREFIX}-${tab}-panel`}
         role="tabpanel"
         aria-labelledby={`${TAB_ID_PREFIX}-${tab}-tab`}
-        className="pt-3"
+        className="min-h-[22.5rem] pt-3"
       >
         {tab === 'result' && (
           <div className="flex flex-col items-center">

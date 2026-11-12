@@ -56,7 +56,7 @@ export const useGameState = ({
   solutionIndex,
   onOpenStats,
 }: Options) => {
-  const { showInfo: showInfoAlert, showSuccess: showSuccessAlert } = useAlert()
+  const { showInfo: showInfoAlert } = useAlert()
 
   const [game, setGame] = useState(() =>
     startGame({ solution, solutionIndex, isHardMode: getStoredGameMode() }),
@@ -116,7 +116,8 @@ export const useGameState = ({
     if (isGameWon) {
       const winMessage =
         WIN_MESSAGES[Math.floor(Math.random() * WIN_MESSAGES.length)]
-      showSuccessAlert(winMessage, {
+      // Neutral, not green: the toast lies over the solved (green) row.
+      showInfoAlert(winMessage, {
         delayMs: REVEAL_DURATION_MS,
         onClose: () => onOpenStats(),
       })
@@ -126,7 +127,7 @@ export const useGameState = ({
     if (isGameLost) {
       schedule(() => onOpenStats(), GAME_LOST_INFO_DELAY)
     }
-  }, [isGameWon, isGameLost, showSuccessAlert, onOpenStats, schedule])
+  }, [isGameWon, isGameLost, showInfoAlert, onOpenStats, schedule])
 
   const jiggle = useCallback(() => {
     vibrate(30)

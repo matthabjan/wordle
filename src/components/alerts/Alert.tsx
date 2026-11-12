@@ -11,7 +11,7 @@ type Props = {
 // Toast just below the header, above the board. Sits over open sheets too.
 export const Alert = ({ isOpen, message, variant = 'error' }: Props) => {
   const classes = classNames(
-    'max-w-full rounded-full px-4 py-2 text-center text-sm leading-snug font-medium text-balance break-words shadow-soft-lg',
+    'max-w-full rounded-full px-5 py-3 text-center text-base leading-snug font-semibold text-balance break-words shadow-toast',
     {
       'bg-[var(--danger-bg-color)] text-white': variant === 'error',
       'bg-[var(--accent-color)] text-white': variant === 'success',

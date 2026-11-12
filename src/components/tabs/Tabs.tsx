@@ -53,10 +53,10 @@ export const Tabs = <T extends string>({
                       !selected,
                   }
                 : {
-                    'rounded-lg border-b-2 px-2.5': true,
-                    'border-[var(--accent-color)] text-nature-stone-900 dark:text-nature-stone-50':
+                    'relative rounded-lg px-2.5': true,
+                    'text-nature-stone-900 after:absolute after:inset-x-2.5 after:bottom-1 after:h-0.5 after:rounded-full after:bg-[var(--accent-color)] dark:text-nature-stone-50':
                       selected,
-                    'border-transparent text-nature-stone-500 dark:text-nature-stone-400':
+                    'text-nature-stone-500 dark:text-nature-stone-400':
                       !selected,
                   },
             )}
