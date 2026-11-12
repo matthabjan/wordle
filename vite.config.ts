@@ -40,6 +40,7 @@ export default defineConfig({
         description: 'Wordle auf Deutsch',
         start_url: '.',
         display: 'standalone',
+        orientation: 'portrait',
         theme_color: '#1c1917',
         background_color: '#fafaf9',
         icons: [

@@ -41,7 +41,7 @@ export const Grid = ({
           solution={solution}
           rowIndex={i}
           isRevealing={isRevealing && guesses.length - 1 === i}
-          celebrate={isGameWon}
+          celebrate={isGameWon && !isRevealing && guesses.length - 1 === i}
         />
       ))}
       {showCurrentRow && (

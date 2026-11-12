@@ -33,9 +33,9 @@ function App() {
   const { showError: showErrorAlert, showSuccess: showSuccessAlert } =
     useAlert()
   const {
-    isDarkMode,
+    themeSetting,
     isHighContrastMode,
-    handleDarkMode,
+    handleThemeSetting,
     handleHighContrastMode,
   } = useTheme()
 
@@ -188,8 +188,8 @@ function App() {
         handleClose={() => setIsSettingsModalOpen(false)}
         isHardMode={isHardMode}
         handleHardMode={handleHardMode}
-        isDarkMode={isDarkMode}
-        handleDarkMode={handleDarkMode}
+        themeSetting={themeSetting}
+        handleThemeSetting={handleThemeSetting}
         isHighContrastMode={isHighContrastMode}
         handleHighContrastMode={handleHighContrastMode}
       />

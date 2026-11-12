@@ -305,6 +305,10 @@
   transform-style: preserve-3d;
 }
 
+.cell-bounce {
+  animation: winBounce 0.6s cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+
 .jiggle {
   animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 }
@@ -397,6 +401,20 @@
   }
 }
 
+@keyframes winBounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  35% {
+    transform: translateY(-28%);
+  }
+  80% {
+    transform: translateY(-8%);
+  }
+}
+
 @keyframes shake {
   0%,
   100% {
@@ -452,6 +470,7 @@
   .cell-fill-animation,
   .cell-reveal,
   .cell-reveal > .letter-container,
+  .cell-bounce,
   .jiggle,
   .cursor-pulse {
     animation: none !important;
