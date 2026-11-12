@@ -1,6 +1,6 @@
 # Wordle
 
-**German Edition 2.4**
+**German Edition 2.5**
 
 [![Test](https://github.com/matthabjan/wordle/actions/workflows/test.yml/badge.svg)](https://github.com/matthabjan/wordle/actions/workflows/test.yml)
 [![Lint](https://github.com/matthabjan/wordle/actions/workflows/lint.yml/badge.svg)](https://github.com/matthabjan/wordle/actions/workflows/lint.yml)
