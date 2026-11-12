@@ -17,23 +17,24 @@ export const PUZZLE_LABEL = (solutionIndex: number, isoDate: string) => {
   )}`
 }
 
+// One list per number of guesses needed (1 to 6), from stunned to relieved.
+// Kept to WIN_MESSAGE_MAX_LENGTH characters so the result headline stays on
+// one line on small phones.
+export const WIN_MESSAGE_MAX_LENGTH = 16
 export const WIN_MESSAGES = [
-  'Gut gemacht!',
-  'Super!',
-  'Mega',
-  'Stark',
-  'Voll gut',
-  'Du scheinst klug zu sein',
-  'Weiter so',
-  'Toll!',
-  'Darauf eine Scheibe Vollkornbrot!',
-  'Gar nicht schlecht, Herr Specht',
-  'Stabile Leistung',
-  'Prima, ein Experte!',
+  ['Volltreffer!', 'Unglaublich!', 'Hellseher?', 'Genial!'],
+  ['Überragend!', 'Meisterhaft!', 'Ganz stark!', 'Mega!'],
+  ['Stark!', 'Super!', 'Richtig gut!', 'Prima!'],
+  ['Gut gemacht!', 'Voll gut!', 'Stabile Leistung', 'Sauber!'],
+  ['Geschafft!', 'Weiter so!', 'Nicht schlecht!', 'Passt schon!'],
+  ['Knapp geschafft!', 'Puh, geschafft!', 'Gerade noch!', 'Das war knapp!'],
 ]
 // The same phrase every time a finished game is looked at again
-export const WIN_MESSAGE = (solutionIndex: number, guessCount: number) =>
-  WIN_MESSAGES[(solutionIndex + guessCount) % WIN_MESSAGES.length]
+export const WIN_MESSAGE = (solutionIndex: number, guessCount: number) => {
+  const phrases =
+    WIN_MESSAGES[Math.min(Math.max(guessCount, 1), WIN_MESSAGES.length) - 1]
+  return phrases[solutionIndex % phrases.length]
+}
 export const GAME_COPIED_MESSAGE = 'Spielverlauf kopiert'
 export const SHARE_FAILED_MESSAGE = 'Teilen fehlgeschlagen'
 export const UPDATE_AVAILABLE_MESSAGE = 'Update verfügbar – neu laden'
