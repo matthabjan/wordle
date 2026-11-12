@@ -53,13 +53,14 @@ Docker shortcuts are in the `Makefile` (`make help`). The most useful are `make 
 ```
 wordle/
 ├── src/
-│   ├── App.tsx              # Layout, modals, leaderboard submission
+│   ├── App.tsx              # Layout, sheets, leaderboard submission
 │   ├── components/
-│   │   ├── alerts/          # Toast notifications
+│   │   ├── alerts/          # Message bar shown over the header
 │   │   ├── grid/            # Board, rows, cells (cursor editing)
 │   │   ├── keyboard/        # On-screen keyboard with key statuses
-│   │   ├── modals/          # Info, Settings, Stats (Headless UI)
-│   │   └── stats/           # Histogram, stat bar, Leaderboard
+│   │   ├── modals/          # Bottom sheets: Info, Settings, Stats (Headless UI)
+│   │   ├── stats/           # Histogram, stat bar, mini grid, Leaderboard
+│   │   └── tabs/            # Tab bar used by the stats sheet and leaderboard
 │   ├── constants/
 │   │   ├── settings.ts      # MAX_WORD_LENGTH, MAX_CHALLENGES, timings
 │   │   ├── strings.ts       # All German UI copy
@@ -70,7 +71,7 @@ wordle/
 │   └── lib/                 # words, statuses, stats, share, leaderboard, localStorage, haptics
 ├── server/                  # Optional Fastify + SQLite leaderboard API
 ├── docker/                  # nginx config for the production image
-├── public/                  # PWA icons, manifest, self-hosted fonts
+├── public/                  # PWA icons, manifest, self-hosted fonts, theme-init.js
 └── docs/                    # This documentation + screenshots
 ```
 

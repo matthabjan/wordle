@@ -73,5 +73,7 @@ Versioning: SemVer from root `package.json`; `server/package.json` must carry th
 
 - `GAME_TITLE` comes from `import.meta.env.VITE_GAME_NAME` — ensure env is set for builds that need a title.
 - Reveal animations use `REVEAL_TIME_MS`; lose/win delays depend on it — don't hardcode timings elsewhere.
+- The theme is applied before the app loads by `public/theme-init.js` (external file because the CSP forbids inline scripts). It mirrors the `theme` / `highContrast` keys in `src/lib/localStorage.ts` and the colours in `src/hooks/useTheme.ts` — change them together.
+- Animations are CSS only (`src/index.css`); `prefers-reduced-motion` is handled there, not in components.
 - PWA service worker is registered via `vite-plugin-pwa` (`virtual:pwa-register`).
 - `server/` has its own `package.json`/`node_modules`, separate from the root — `npm install` at repo root does not install it; `cd server && npm install`.
