@@ -1,106 +1,134 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, beforeEach, vi } from 'vitest'
-import { setLeaderboardIdentity } from '../../lib/leaderboard'
+import { beforeEach, describe, expect, test } from 'vitest'
+import { createLeaderboard } from '../../lib/leaderboard'
+import { createInMemoryTransport } from '../../lib/leaderboardInMemory'
+import { getDateForSolutionIndex } from '../../lib/words'
 import { Leaderboard } from './Leaderboard'
 
-const jsonResponse = (body: unknown) =>
-  new Response(JSON.stringify(body), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  })
+const PASSPHRASE = 'secret'
+const TODAY = getDateForSolutionIndex(3)
+
+const setup = () => {
+  const server = createInMemoryTransport(PASSPHRASE)
+  return { server, leaderboard: createLeaderboard(server.transport) }
+}
+
+const join = async (name: string, passphrase: string) => {
+  const user = userEvent.setup()
+  await user.type(screen.getByLabelText('Dein Name'), name)
+  await user.type(screen.getByLabelText('Passwort'), passphrase)
+  await user.click(screen.getByRole('button', { name: 'Verbinden' }))
+}
 
 describe('Leaderboard', () => {
   beforeEach(() => {
     localStorage.clear()
-    setLeaderboardIdentity({ name: 'Ada', passphrase: 'secret' })
-  })
-
-  afterEach(() => {
-    vi.unstubAllGlobals()
   })
 
   test('switches from daily to overall results', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(jsonResponse([]))
-      .mockResolvedValueOnce(
-        jsonResponse([
-          {
-            name: 'Ada',
-            points: 10,
-            gamesPlayed: 3,
-            wins: 2,
-            winRate: 66.7,
-            averageGuesses: 2,
-          },
-        ]),
-      )
-    vi.stubGlobal('fetch', fetchMock)
+    const { server, leaderboard } = setup()
+    await leaderboard.join({ name: 'Ada', passphrase: PASSPHRASE }, TODAY)
+    server.seed('Ada', { date: '2026-01-01', guesses: ['APFEL'], won: true })
+    server.seed('Ada', {
+      date: '2026-01-02',
+      guesses: ['KNOPF', 'XENON', 'APFEL'],
+      won: true,
+    })
+    server.seed('Ada', {
+      date: '2026-01-03',
+      guesses: ['KNOPF', 'XENON', 'SITTE', 'FOYER', 'WRACK', 'KAKAO'],
+      won: false,
+    })
 
-    const user = userEvent.setup()
     render(
       <Leaderboard
-        date="2026-07-21"
+        date={TODAY}
         solution="APFEL"
-        guesses={[]}
         isOpen={true}
         isGameWon={false}
         isGameLost={false}
+        leaderboard={leaderboard}
       />,
     )
 
     expect(
       await screen.findByText('Noch niemand hat heute gespielt.'),
     ).toBeInTheDocument()
-    await user.click(screen.getByRole('tab', { name: 'Gesamt' }))
+    await userEvent.click(screen.getByRole('tab', { name: 'Gesamt' }))
 
     expect(await screen.findByText('10 Pkt.')).toBeInTheDocument()
     expect(
-      screen.getByText('3 Spiele · 2 Siege (66,7 %) · Ø Versuche: 2'),
+      screen.getByText('3 Spiele · 2 Siege (66,67 %) · Ø Versuche: 2'),
     ).toBeInTheDocument()
-    expect(fetchMock.mock.calls[1][0]).toContain('/api/leaderboard/overall')
   })
 
-  test('submits a finished game when joining afterwards', async () => {
-    localStorage.clear()
+  test('shows a finished game when joining afterwards', async () => {
+    const { server, leaderboard } = setup()
+    server.seed('Ben', { date: TODAY, guesses: ['KNOPF', 'APFEL'], won: true })
+    leaderboard.reportResult({
+      solutionIndex: 3,
+      guesses: ['APFEL'],
+      won: true,
+      isHardMode: false,
+    })
 
-    const submitted: unknown[] = []
-    const fetchMock = vi.fn(
-      async (input: RequestInfo | URL, init?: RequestInit) => {
-        if (String(input).includes('/api/results')) {
-          submitted.push(JSON.parse(String(init?.body)))
-          return new Response(null, { status: 204 })
-        }
-        // Reveal gate: the viewer only shows up once their result is stored.
-        return jsonResponse(
-          submitted.length > 0
-            ? [{ name: 'Ada', won: true, guessCount: 1, guesses: ['APFEL'] }]
-            : [],
-        )
-      },
-    )
-    vi.stubGlobal('fetch', fetchMock)
-
-    const user = userEvent.setup()
     render(
       <Leaderboard
-        date="2026-07-21"
+        date={TODAY}
         solution="APFEL"
-        guesses={['APFEL']}
         isOpen={true}
         isGameWon={true}
         isGameLost={false}
+        leaderboard={leaderboard}
+      />,
+    )
+    await join('Ada', PASSPHRASE)
+
+    expect(await screen.findByText('1/6')).toBeInTheDocument()
+    expect(screen.getByText('(Du)')).toBeInTheDocument()
+    // Having submitted, the player also sees Ben's grid (two rows).
+    expect(screen.getByText('2/6')).toBeInTheDocument()
+    expect(document.querySelectorAll('pre')).toHaveLength(2)
+  })
+
+  test('rejects a wrong passphrase and stays on the join form', async () => {
+    const { leaderboard } = setup()
+
+    render(
+      <Leaderboard
+        date={TODAY}
+        solution="APFEL"
+        isOpen={true}
+        isGameWon={false}
+        isGameLost={false}
+        leaderboard={leaderboard}
+      />,
+    )
+    await join('Ada', 'wrong')
+
+    expect(await screen.findByText('Passwort falsch')).toBeInTheDocument()
+    expect(leaderboard.getIdentity()).toBeNull()
+  })
+
+  test('says so when the leaderboard is unreachable', async () => {
+    const { server, leaderboard } = setup()
+    await leaderboard.join({ name: 'Ada', passphrase: PASSPHRASE }, TODAY)
+    server.setOnline(false)
+
+    render(
+      <Leaderboard
+        date={TODAY}
+        solution="APFEL"
+        isOpen={true}
+        isGameWon={false}
+        isGameLost={false}
+        leaderboard={leaderboard}
       />,
     )
 
-    await user.type(screen.getByLabelText('Dein Name'), 'Ada')
-    await user.type(screen.getByLabelText('Passwort'), 'secret')
-    await user.click(screen.getByRole('button', { name: 'Verbinden' }))
-
-    expect(await screen.findByText('1/6')).toBeInTheDocument()
-    expect(submitted).toEqual([
-      { name: 'Ada', date: '2026-07-21', guesses: ['APFEL'], won: true },
-    ])
+    expect(
+      await screen.findByText(/Bestenliste derzeit nicht verfügbar/),
+    ).toBeInTheDocument()
   })
 })

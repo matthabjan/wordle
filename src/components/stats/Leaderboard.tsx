@@ -22,12 +22,8 @@ import {
   LEADERBOARD_YOU_SUFFIX,
 } from '../../constants/strings'
 import {
-  clearLeaderboardIdentity,
-  fetchLeaderboard,
-  fetchOverallLeaderboard,
-  getLeaderboardIdentity,
-  setLeaderboardIdentity,
-  submitLeaderboardResult,
+  leaderboard as defaultLeaderboard,
+  type Leaderboard as LeaderboardParticipation,
   type LeaderboardEntry,
   type LeaderboardIdentity,
   type OverallLeaderboardEntry,
@@ -37,11 +33,18 @@ import { generateEmojiGrid } from '../../lib/share'
 type Props = {
   date: string
   solution: string
-  guesses: string[]
   isOpen: boolean
   isGameWon: boolean
   isGameLost: boolean
+  leaderboard?: LeaderboardParticipation
 }
+
+type View = 'daily' | 'overall'
+
+type Standings =
+  | { status: 'idle' | 'loading' | 'unauthorized' | 'unavailable' }
+  | { status: 'ok'; view: 'daily'; entries: LeaderboardEntry[] }
+  | { status: 'ok'; view: 'overall'; entries: OverallLeaderboardEntry[] }
 
 const inputClass =
   'w-full rounded-xl border border-nature-stone-300 bg-nature-stone-50 px-3 py-2 text-sm text-nature-stone-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] dark:border-nature-stone-600 dark:bg-nature-stone-900 dark:text-nature-stone-50'
@@ -53,62 +56,45 @@ const numberFormatter = new Intl.NumberFormat('de-DE', {
 export const Leaderboard = ({
   date,
   solution,
-  guesses,
   isOpen,
   isGameWon,
   isGameLost,
+  leaderboard = defaultLeaderboard,
 }: Props) => {
   const [identity, setIdentity] = useState<LeaderboardIdentity | null>(() =>
-    getLeaderboardIdentity(),
+    leaderboard.getIdentity(),
   )
   const [nameInput, setNameInput] = useState('')
   const [passphraseInput, setPassphraseInput] = useState('')
   const [isJoining, setIsJoining] = useState(false)
   const [setupError, setSetupError] = useState<string | null>(null)
 
-  const [activeView, setActiveView] = useState<'daily' | 'overall'>('daily')
-  const [entries, setEntries] = useState<LeaderboardEntry[] | null>(null)
-  const [overallEntries, setOverallEntries] = useState<
-    OverallLeaderboardEntry[] | null
-  >(null)
-  const [leaderboardStatus, setLeaderboardStatus] = useState<
-    'idle' | 'loading' | 'ok' | 'unauthorized' | 'unavailable'
-  >('idle')
+  const [activeView, setActiveView] = useState<View>('daily')
+  const [standings, setStandings] = useState<Standings>({ status: 'idle' })
 
   useEffect(() => {
     if (!isOpen || !identity) return
 
     let cancelled = false
-    setLeaderboardStatus('loading')
+    setStandings({ status: 'loading' })
 
-    if (activeView === 'daily') {
-      fetchLeaderboard({ identity, date }).then((result) => {
-        if (cancelled) return
-        if (result.status === 'ok') {
-          setEntries(result.entries)
-          setLeaderboardStatus('ok')
-        } else {
-          setEntries(null)
-          setLeaderboardStatus(result.status)
-        }
-      })
-    } else {
-      fetchOverallLeaderboard({ identity }).then((result) => {
-        if (cancelled) return
-        if (result.status === 'ok') {
-          setOverallEntries(result.entries)
-          setLeaderboardStatus('ok')
-        } else {
-          setOverallEntries(null)
-          setLeaderboardStatus(result.status)
-        }
-      })
+    const load = async (): Promise<Standings> => {
+      if (activeView === 'daily') {
+        const result = await leaderboard.dailyStandings(date)
+        return result.status === 'ok' ? { ...result, view: 'daily' } : result
+      }
+      const result = await leaderboard.overallStandings()
+      return result.status === 'ok' ? { ...result, view: 'overall' } : result
     }
+
+    load().then((loaded) => {
+      if (!cancelled) setStandings(loaded)
+    })
 
     return () => {
       cancelled = true
     }
-  }, [isOpen, identity, date, isGameWon, isGameLost, activeView])
+  }, [leaderboard, isOpen, identity, date, isGameWon, isGameLost, activeView])
 
   const handleJoin = async () => {
     const name = nameInput.trim()
@@ -121,50 +107,36 @@ export const Leaderboard = ({
     setIsJoining(true)
     setSetupError(null)
 
-    const candidate = { name, passphrase }
-    let result = await fetchLeaderboard({ identity: candidate, date })
+    const { status } = await leaderboard.join({ name, passphrase }, date)
+    setIsJoining(false)
 
-    if (result.status === 'unauthorized') {
-      setIsJoining(false)
+    if (status === 'unauthorized') {
       setSetupError(LEADERBOARD_WRONG_PASSPHRASE_MESSAGE)
       return
     }
 
-    setLeaderboardIdentity(candidate)
-
-    // A game finished before joining was never submitted — send it now, then
-    // refetch so the player's own entry (and the revealed grids) show up.
-    if (isGameWon || isGameLost) {
-      await submitLeaderboardResult({
-        identity: candidate,
-        date,
-        guesses,
-        won: isGameWon,
-      })
-      result = await fetchLeaderboard({ identity: candidate, date })
-    }
-
-    setIsJoining(false)
-    setIdentity(candidate)
-
-    if (result.status === 'ok') {
-      setEntries(result.entries)
-      setLeaderboardStatus('ok')
-    } else {
-      setLeaderboardStatus('unavailable')
-    }
+    // Loading the standings (and submitting an already finished game first)
+    // is picked up by the effect above.
+    setIdentity(leaderboard.getIdentity())
   }
 
   const handleChangeIdentity = () => {
-    clearLeaderboardIdentity()
+    leaderboard.leave()
     setIdentity(null)
-    setEntries(null)
-    setOverallEntries(null)
-    setLeaderboardStatus('idle')
+    setStandings({ status: 'idle' })
     setActiveView('daily')
     setNameInput('')
     setPassphraseInput('')
   }
+
+  const dailyEntries =
+    standings.status === 'ok' && standings.view === 'daily'
+      ? standings.entries
+      : null
+  const overallEntries =
+    standings.status === 'ok' && standings.view === 'overall'
+      ? standings.entries
+      : null
 
   return (
     <div className="mt-4 border-t border-nature-stone-200 pt-4 dark:border-nature-stone-700">
@@ -246,105 +218,93 @@ export const Leaderboard = ({
             role="tabpanel"
             aria-labelledby={`leaderboard-${activeView}-tab`}
           >
-            {leaderboardStatus === 'unauthorized' && (
+            {standings.status === 'unauthorized' && (
               <p className="text-sm text-[var(--danger-bg-color)]">
                 {LEADERBOARD_WRONG_PASSPHRASE_MESSAGE}
               </p>
             )}
-            {leaderboardStatus === 'unavailable' && (
+            {standings.status === 'unavailable' && (
               <p className="text-sm text-nature-stone-500 dark:text-nature-stone-400">
                 {LEADERBOARD_UNAVAILABLE_TEXT}
               </p>
             )}
-            {activeView === 'daily' &&
-              leaderboardStatus === 'ok' &&
-              entries &&
-              entries.length === 0 && (
-                <p className="text-sm text-nature-stone-500 dark:text-nature-stone-400">
-                  {LEADERBOARD_EMPTY_TEXT}
-                </p>
-              )}
-            {activeView === 'daily' &&
-              leaderboardStatus === 'ok' &&
-              entries &&
-              entries.length > 0 && (
-                <ul className="space-y-2">
-                  {entries.map((entry) => (
-                    <li
-                      key={entry.name}
-                      className="rounded-xl bg-nature-stone-100 px-3 py-2 dark:bg-nature-stone-700/60"
-                    >
-                      <div className="flex items-center justify-between text-sm font-medium text-nature-stone-900 dark:text-nature-stone-50">
-                        <span>
-                          {entry.name}
-                          {entry.name === identity.name && (
-                            <span className="ml-1 font-normal text-nature-stone-500 dark:text-nature-stone-400">
-                              {LEADERBOARD_YOU_SUFFIX}
-                            </span>
-                          )}
-                        </span>
-                        <span className="tabular-nums">
-                          {entry.won
-                            ? `${entry.guessCount}/6`
-                            : LEADERBOARD_LOST_LABEL}
-                        </span>
-                      </div>
-                      {entry.guesses && (
-                        <pre className="mt-1 text-xs leading-tight">
-                          {generateEmojiGrid(entry.guesses, solution)}
-                        </pre>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            {activeView === 'overall' &&
-              leaderboardStatus === 'ok' &&
-              overallEntries &&
-              overallEntries.length === 0 && (
-                <p className="text-sm text-nature-stone-500 dark:text-nature-stone-400">
-                  {LEADERBOARD_OVERALL_EMPTY_TEXT}
-                </p>
-              )}
-            {activeView === 'overall' &&
-              leaderboardStatus === 'ok' &&
-              overallEntries &&
-              overallEntries.length > 0 && (
-                <ol className="space-y-2">
-                  {overallEntries.map((entry, index) => (
-                    <li
-                      key={entry.name}
-                      className="rounded-xl bg-nature-stone-100 px-3 py-2 dark:bg-nature-stone-700/60"
-                    >
-                      <div className="flex items-center gap-2 text-sm font-medium text-nature-stone-900 dark:text-nature-stone-50">
-                        <span className="w-5 shrink-0 text-right tabular-nums text-nature-stone-500 dark:text-nature-stone-400">
-                          {index + 1}.
-                        </span>
-                        <span className="min-w-0 grow truncate">
-                          {entry.name}
-                          {entry.name === identity.name && (
-                            <span className="ml-1 font-normal text-nature-stone-500 dark:text-nature-stone-400">
-                              {LEADERBOARD_YOU_SUFFIX}
-                            </span>
-                          )}
-                        </span>
-                        <span className="shrink-0 tabular-nums">
-                          {entry.points} {LEADERBOARD_POINTS_LABEL}
-                        </span>
-                      </div>
-                      <p className="mt-1 ml-7 text-xs text-nature-stone-500 dark:text-nature-stone-400">
-                        {entry.gamesPlayed} {LEADERBOARD_GAMES_LABEL} ·{' '}
-                        {entry.wins} {LEADERBOARD_WINS_LABEL} (
-                        {numberFormatter.format(entry.winRate)} %) ·{' '}
-                        {LEADERBOARD_AVERAGE_LABEL}:{' '}
-                        {entry.averageGuesses === null
-                          ? '–'
-                          : numberFormatter.format(entry.averageGuesses)}
-                      </p>
-                    </li>
-                  ))}
-                </ol>
-              )}
+            {dailyEntries && dailyEntries.length === 0 && (
+              <p className="text-sm text-nature-stone-500 dark:text-nature-stone-400">
+                {LEADERBOARD_EMPTY_TEXT}
+              </p>
+            )}
+            {dailyEntries && dailyEntries.length > 0 && (
+              <ul className="space-y-2">
+                {dailyEntries.map((entry) => (
+                  <li
+                    key={entry.name}
+                    className="rounded-xl bg-nature-stone-100 px-3 py-2 dark:bg-nature-stone-700/60"
+                  >
+                    <div className="flex items-center justify-between text-sm font-medium text-nature-stone-900 dark:text-nature-stone-50">
+                      <span>
+                        {entry.name}
+                        {entry.name === identity.name && (
+                          <span className="ml-1 font-normal text-nature-stone-500 dark:text-nature-stone-400">
+                            {LEADERBOARD_YOU_SUFFIX}
+                          </span>
+                        )}
+                      </span>
+                      <span className="tabular-nums">
+                        {entry.won
+                          ? `${entry.guessCount}/6`
+                          : LEADERBOARD_LOST_LABEL}
+                      </span>
+                    </div>
+                    {entry.guesses && (
+                      <pre className="mt-1 text-xs leading-tight">
+                        {generateEmojiGrid(entry.guesses, solution)}
+                      </pre>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {overallEntries && overallEntries.length === 0 && (
+              <p className="text-sm text-nature-stone-500 dark:text-nature-stone-400">
+                {LEADERBOARD_OVERALL_EMPTY_TEXT}
+              </p>
+            )}
+            {overallEntries && overallEntries.length > 0 && (
+              <ol className="space-y-2">
+                {overallEntries.map((entry, index) => (
+                  <li
+                    key={entry.name}
+                    className="rounded-xl bg-nature-stone-100 px-3 py-2 dark:bg-nature-stone-700/60"
+                  >
+                    <div className="flex items-center gap-2 text-sm font-medium text-nature-stone-900 dark:text-nature-stone-50">
+                      <span className="w-5 shrink-0 text-right tabular-nums text-nature-stone-500 dark:text-nature-stone-400">
+                        {index + 1}.
+                      </span>
+                      <span className="min-w-0 grow truncate">
+                        {entry.name}
+                        {entry.name === identity.name && (
+                          <span className="ml-1 font-normal text-nature-stone-500 dark:text-nature-stone-400">
+                            {LEADERBOARD_YOU_SUFFIX}
+                          </span>
+                        )}
+                      </span>
+                      <span className="shrink-0 tabular-nums">
+                        {entry.points} {LEADERBOARD_POINTS_LABEL}
+                      </span>
+                    </div>
+                    <p className="mt-1 ml-7 text-xs text-nature-stone-500 dark:text-nature-stone-400">
+                      {entry.gamesPlayed} {LEADERBOARD_GAMES_LABEL} ·{' '}
+                      {entry.wins} {LEADERBOARD_WINS_LABEL} (
+                      {numberFormatter.format(entry.winRate)} %) ·{' '}
+                      {LEADERBOARD_AVERAGE_LABEL}:{' '}
+                      {entry.averageGuesses === null
+                        ? '–'
+                        : numberFormatter.format(entry.averageGuesses)}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            )}
           </div>
           <button
             type="button"

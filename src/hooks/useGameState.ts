@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ALERT_TIME_MS,
   GAME_LOST_INFO_DELAY,
@@ -16,6 +16,7 @@ import {
 import { useAlert } from '../context/AlertContext'
 import {
   deleteLetter,
+  getGameResult,
   moveCursor as moveGameCursor,
   setCursor as setGameCursor,
   setHardMode,
@@ -69,6 +70,7 @@ export const useGameState = ({
 
   const isGameWon = game.status === 'won'
   const isGameLost = game.status === 'lost'
+  const result = useMemo(() => getGameResult(game), [game])
 
   const timersRef = useRef<number[]>([])
 
@@ -233,6 +235,7 @@ export const useGameState = ({
     guesses: game.guesses,
     isGameWon,
     isGameLost,
+    result,
     isRevealing,
     currentRowClass,
     stats,
