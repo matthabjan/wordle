@@ -210,6 +210,7 @@
   /* White text on these must reach 4.5:1 */
   --correct-cell-bg-color: #047857;
   --present-cell-bg-color: #b45309;
+  --present-cell-text-color: #fff;
 
   --accent-color: #047857;
   --danger-bg-color: #e11d48;
@@ -237,9 +238,40 @@
   --cursor-ring-color-strong: rgba(16, 185, 129, 0.85);
 }
 
-.high-contrast {
+/* Selectable palettes. Yellow is light, so its letters are dark. */
+.palette-lemon {
+  --correct-cell-bg-color: #0f766e;
+  --present-cell-bg-color: #facc15;
+  --present-cell-text-color: #1c1917;
+  --accent-color: #0f766e;
+  --focus-ring-color: #0d9488;
+  --cursor-ring-color: rgba(13, 148, 136, 0.45);
+  --cursor-ring-color-strong: rgba(13, 148, 136, 0.85);
+}
+
+.dark.palette-lemon {
+  --present-cell-bg-color: #eab308;
+  --focus-ring-color: #14b8a6;
+  --cursor-ring-color: rgba(20, 184, 166, 0.45);
+  --cursor-ring-color-strong: rgba(20, 184, 166, 0.85);
+}
+
+.palette-sunflower {
+  --correct-cell-bg-color: #059669;
+  --present-cell-bg-color: #eab308;
+  --present-cell-text-color: #1c1917;
+}
+
+.dark.palette-sunflower {
+  --correct-cell-bg-color: #047857;
+  --present-cell-bg-color: #ca8a04;
+}
+
+/* :root raises specificity so high contrast beats any palette */
+:root.high-contrast {
   --correct-cell-bg-color: #c2410c;
   --present-cell-bg-color: #0e7490;
+  --present-cell-text-color: #fff;
   --accent-color: #c2410c;
   --focus-ring-color: #ea580c;
   --cursor-ring-color: rgba(234, 88, 12, 0.45);
@@ -269,7 +301,7 @@
 .key-status-present {
   background-color: var(--present-cell-bg-color);
   border-color: var(--present-cell-bg-color);
-  color: #fff;
+  color: var(--present-cell-text-color);
 }
 
 .cell-cursor {

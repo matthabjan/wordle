@@ -1,6 +1,6 @@
 import classnames from 'classnames'
 import { GAME_EDITION_TEXT } from '../../constants/strings'
-import { ThemeSetting } from '../../lib/localStorage'
+import { PaletteSetting, ThemeSetting } from '../../lib/localStorage'
 import { BaseModal } from './BaseModal'
 import { SettingsToggle } from './SettingsToggle'
 
@@ -13,6 +13,8 @@ type Props = {
   handleThemeSetting: (value: ThemeSetting) => void
   isHighContrastMode: boolean
   handleHighContrastMode: (value: boolean) => void
+  paletteSetting: PaletteSetting
+  handlePaletteSetting: (value: PaletteSetting) => void
 }
 
 const THEME_OPTIONS: [ThemeSetting, string][] = [
@@ -20,6 +22,76 @@ const THEME_OPTIONS: [ThemeSetting, string][] = [
   ['light', 'Hell'],
   ['dark', 'Dunkel'],
 ]
+
+const PALETTE_OPTIONS: [PaletteSetting, string][] = [
+  ['default', 'Standard'],
+  ['lemon', 'Zitrone'],
+  ['sunflower', 'Sonnenblume'],
+]
+
+type RadioGroupProps<T extends string> = {
+  id: string
+  label: string
+  options: [T, string][]
+  value: T
+  onChange: (value: T) => void
+  disabled?: boolean
+  description?: string
+}
+
+const SettingsRadioGroup = <T extends string>({
+  id,
+  label,
+  options,
+  value,
+  onChange,
+  disabled = false,
+  description,
+}: RadioGroupProps<T>) => (
+  <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+    <div className="text-left">
+      <h2
+        id={id}
+        className="font-medium text-nature-stone-700 dark:text-nature-stone-200"
+      >
+        {label}
+      </h2>
+      {description && (
+        <p className="text-xs text-nature-stone-500 dark:text-nature-stone-400">
+          {description}
+        </p>
+      )}
+    </div>
+    <div
+      role="radiogroup"
+      aria-labelledby={id}
+      aria-disabled={disabled || undefined}
+      className={classnames(
+        'flex shrink-0 rounded-xl bg-nature-stone-200 p-1 dark:bg-nature-stone-700',
+        disabled && 'opacity-50',
+      )}
+    >
+      {options.map(([optionValue, optionLabel]) => (
+        <button
+          key={optionValue}
+          type="button"
+          role="radio"
+          aria-checked={value === optionValue}
+          disabled={disabled}
+          className={classnames(
+            'min-h-9 rounded-lg px-3 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] disabled:cursor-not-allowed',
+            value === optionValue
+              ? 'bg-white text-nature-stone-900 shadow-sm dark:bg-nature-stone-900 dark:text-nature-stone-50'
+              : 'text-nature-stone-600 dark:text-nature-stone-300',
+          )}
+          onClick={() => onChange(optionValue)}
+        >
+          {optionLabel}
+        </button>
+      ))}
+    </div>
+  </div>
+)
 
 export const SettingsModal = ({
   isOpen,
@@ -30,6 +102,8 @@ export const SettingsModal = ({
   handleThemeSetting,
   isHighContrastMode,
   handleHighContrastMode,
+  paletteSetting,
+  handlePaletteSetting,
 }: Props) => {
   return (
     <BaseModal title="Einstellungen" isOpen={isOpen} handleClose={handleClose}>
@@ -40,37 +114,24 @@ export const SettingsModal = ({
           handleFlag={handleHardMode}
           description="Jeder Versuch muss die Hinweise der vorigen Runden berücksichtigen."
         />
-        <div className="mt-3 flex items-center justify-between gap-4">
-          <h2
-            id="theme-setting-label"
-            className="text-left font-medium text-nature-stone-700 dark:text-nature-stone-200"
-          >
-            Design
-          </h2>
-          <div
-            role="radiogroup"
-            aria-labelledby="theme-setting-label"
-            className="flex shrink-0 rounded-xl bg-nature-stone-200 p-1 dark:bg-nature-stone-700"
-          >
-            {THEME_OPTIONS.map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                role="radio"
-                aria-checked={themeSetting === value}
-                className={classnames(
-                  'min-h-9 rounded-lg px-3 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)]',
-                  themeSetting === value
-                    ? 'bg-white text-nature-stone-900 shadow-sm dark:bg-nature-stone-900 dark:text-nature-stone-50'
-                    : 'text-nature-stone-600 dark:text-nature-stone-300',
-                )}
-                onClick={() => handleThemeSetting(value)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <SettingsRadioGroup
+          id="theme-setting-label"
+          label="Design"
+          options={THEME_OPTIONS}
+          value={themeSetting}
+          onChange={handleThemeSetting}
+        />
+        <SettingsRadioGroup
+          id="palette-setting-label"
+          label="Farben"
+          options={PALETTE_OPTIONS}
+          value={paletteSetting}
+          onChange={handlePaletteSetting}
+          disabled={isHighContrastMode}
+          description={
+            isHighContrastMode ? 'Hoher Kontrast hat eigene Farben.' : undefined
+          }
+        />
         <SettingsToggle
           settingName="Hoher Kontrast"
           flag={isHighContrastMode}

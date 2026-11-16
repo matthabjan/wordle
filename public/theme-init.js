@@ -13,6 +13,10 @@
     if (localStorage.getItem('highContrast') === '1') {
       root.classList.add('high-contrast')
     }
+    var palette = localStorage.getItem('palette')
+    if (palette === 'lemon' || palette === 'sunflower') {
+      root.classList.add('palette-' + palette)
+    }
     var metas = document.querySelectorAll('meta[name="theme-color"]')
     for (var i = 0; i < metas.length; i++) {
       metas[i].setAttribute('content', dark ? '#1c1917' : '#fafaf9')

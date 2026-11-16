@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import {
   getStoredIsHighContrastMode,
+  getStoredPaletteSetting,
   getStoredThemeSetting,
+  PaletteSetting,
   setStoredIsHighContrastMode,
+  setStoredPaletteSetting,
   setStoredThemeSetting,
   ThemeSetting,
 } from '../lib/localStorage'
@@ -10,6 +13,11 @@ import {
 const DARK_QUERY = '(prefers-color-scheme: dark)'
 // Page backgrounds, mirrored in index.css and public/theme-init.js
 const THEME_COLOR = { light: '#fafaf9', dark: '#1c1917' }
+// Palette classes, mirrored in index.css and public/theme-init.js
+const PALETTE_CLASSES: Record<Exclude<PaletteSetting, 'default'>, string> = {
+  lemon: 'palette-lemon',
+  sunflower: 'palette-sunflower',
+}
 
 export const useTheme = () => {
   const [themeSetting, setThemeSetting] = useState<ThemeSetting>(() =>
@@ -20,6 +28,9 @@ export const useTheme = () => {
   )
   const [isHighContrastMode, setIsHighContrastMode] = useState(
     getStoredIsHighContrastMode(),
+  )
+  const [paletteSetting, setPaletteSetting] = useState<PaletteSetting>(() =>
+    getStoredPaletteSetting(),
   )
 
   useEffect(() => {
@@ -39,6 +50,12 @@ export const useTheme = () => {
       'high-contrast',
       isHighContrastMode,
     )
+    Object.entries(PALETTE_CLASSES).forEach(([palette, className]) =>
+      document.documentElement.classList.toggle(
+        className,
+        palette === paletteSetting,
+      ),
+    )
 
     // All of them, so the device-scheme variants cannot overrule the setting.
     document
@@ -49,7 +66,7 @@ export const useTheme = () => {
           isDarkMode ? THEME_COLOR.dark : THEME_COLOR.light,
         ),
       )
-  }, [isDarkMode, isHighContrastMode])
+  }, [isDarkMode, isHighContrastMode, paletteSetting])
 
   const handleThemeSetting = (setting: ThemeSetting) => {
     setThemeSetting(setting)
@@ -61,10 +78,17 @@ export const useTheme = () => {
     setStoredIsHighContrastMode(isHighContrast)
   }
 
+  const handlePaletteSetting = (setting: PaletteSetting) => {
+    setPaletteSetting(setting)
+    setStoredPaletteSetting(setting)
+  }
+
   return {
     themeSetting,
     isHighContrastMode,
+    paletteSetting,
     handleThemeSetting,
     handleHighContrastMode,
+    handlePaletteSetting,
   }
 }

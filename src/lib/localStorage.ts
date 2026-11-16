@@ -4,6 +4,7 @@ const gameStateKey = 'gameState'
 const gameStatKey = 'gameStats'
 const highContrastKey = 'highContrast'
 const themeKey = 'theme'
+const paletteKey = 'palette'
 const gameModeKey = 'gameMode'
 
 type StoredGameState = {
@@ -123,6 +124,23 @@ export const setStoredThemeSetting = (setting: ThemeSetting) => {
 export const getStoredThemeSetting = (): ThemeSetting => {
   const theme = localStorage.getItem(themeKey)
   return theme === 'dark' || theme === 'light' ? theme : 'system'
+}
+
+export type PaletteSetting = 'default' | 'lemon' | 'sunflower'
+
+// `default` is stored as no entry, like `system` above. public/theme-init.js
+// reads the same key before the app loads.
+export const setStoredPaletteSetting = (setting: PaletteSetting) => {
+  if (setting === 'default') {
+    localStorage.removeItem(paletteKey)
+  } else {
+    localStorage.setItem(paletteKey, setting)
+  }
+}
+
+export const getStoredPaletteSetting = (): PaletteSetting => {
+  const palette = localStorage.getItem(paletteKey)
+  return palette === 'lemon' || palette === 'sunflower' ? palette : 'default'
 }
 
 export const setStoredGameMode = (isHard: boolean) => {
