@@ -37,6 +37,8 @@ function App() {
     isHighContrastMode,
     handleThemeSetting,
     handleHighContrastMode,
+    paletteSetting,
+    handlePaletteSetting,
   } = useTheme()
 
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
@@ -192,6 +194,8 @@ function App() {
         handleThemeSetting={handleThemeSetting}
         isHighContrastMode={isHighContrastMode}
         handleHighContrastMode={handleHighContrastMode}
+        paletteSetting={paletteSetting}
+        handlePaletteSetting={handlePaletteSetting}
       />
 
       <AlertContainer />
